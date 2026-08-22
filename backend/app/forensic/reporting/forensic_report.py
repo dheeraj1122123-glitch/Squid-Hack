@@ -16,7 +16,7 @@ def generate_forensic_report(
     warnings: list[str] = []
 
     if camera.get("status") == "MODEL_NOT_TRAINED":
-        warnings.append("Camera classifier not trained — attribution unavailable")
+        warnings.append("Camera classifier not trained â€” attribution unavailable")
     if manipulation.get("learned_detector_status") == "MODEL_NOT_TRAINED":
         warnings.append("Learned manipulation detector not trained")
     warnings.extend(manipulation.get("limitations", []))
@@ -50,37 +50,25 @@ def generate_forensic_report(
 
 
 def human_readable_summary(report: dict) -> str:
-    lines = [
-        f"CameraTrace Forensic Report — Analysis {report['analysis_id']}",
-        f"Generated: {report['generated_at']}",
-        "",
-        "=== METADATA (Factual Observations) ===",
-    ]
+    """Create a concise, traceable report for the web download view."""
+    lines = [f"CameraTrace Forensic Report | Analysis {report['analysis_id']}", f"Generated (UTC): {report['generated_at']}", "", "=== EVIDENCE INTAKE ==="]
+    evidence = report.get("evidence", {})
+    lines.extend([f"  File: {evidence.get('filename', 'N/A')}", f"  SHA-256: {evidence.get('sha256', 'N/A')}", f"  Dimensions: {evidence.get('dimensions', 'N/A')}"])
     meta = report.get("metadata", {})
-    lines.append(f"  Camera Make: {meta.get('metadata_camera_make', 'N/A')}")
-    lines.append(f"  Camera Model: {meta.get('metadata_camera_model', 'N/A')}")
-    lines.append(f"  EXIF Available: {meta.get('metadata_available', False)}")
-
-    lines.extend(["", "=== CAMERA ATTRIBUTION (Model Predictions) ==="])
+    lines.extend(["", "=== METADATA OBSERVATIONS ===", f"  EXIF available: {meta.get('metadata_available', False)}", f"  Make / Model: {(meta.get('metadata_camera_make') or 'N/A')} / {(meta.get('metadata_camera_model') or 'N/A')}", f"  Editing software: {meta.get('metadata_software') or 'Not reported'}"])
     cam = report.get("camera_attribution", {})
-    lines.append(f"  Status: {cam.get('status', 'N/A')}")
-    lines.append(f"  Manufacturer: {cam.get('manufacturer', 'N/A')}")
-    lines.append(f"  Model: {cam.get('model', 'N/A')}")
-    lines.append(f"  Confidence: {cam.get('confidence', 0):.3f}")
-
-    lines.extend(["", "=== MANIPULATION ANALYSIS ==="])
+    lines.extend(["", "=== CAMERA ATTRIBUTION ===", f"  Status: {cam.get('status', 'N/A')}", f"  Result: {cam.get('full_label') or cam.get('model') or 'Unknown'}", f"  Source: {cam.get('prediction_source', 'FORENSIC_ML')}", f"  Confidence: {cam.get('confidence', 0):.1%}", f"  Uncertainty: {cam.get('uncertainty', 1):.1%}"])
+    candidates = cam.get("top_candidates", [])
+    if candidates:
+        lines.append("  Candidates: " + "; ".join(f"{c.get('camera_model')} ({c.get('confidence', 0):.1%})" for c in candidates))
     manip = report.get("manipulation_analysis", {})
-    lines.append(f"  Status: {manip.get('status', 'N/A')}")
-    lines.append(f"  Suspiciousness: {manip.get('overall_suspiciousness', 0):.3f}")
-
-    lines.extend(["", "=== CONSISTENCY ==="])
+    ai = manip.get("ai_generated", {})
+    lines.extend(["", "=== MANIPULATION & AI INDICATORS ===", f"  Overall suspiciousness: {manip.get('overall_suspiciousness', 0):.1%}", f"  Findings: {', '.join(manip.get('types', [])) or 'None'}", f"  AI detector: {ai.get('status', 'not available')}"])
+    if ai.get("status") == "success": lines.append(f"  AI-generated likelihood: {ai.get('ai_generated_likelihood', 0):.1%}")
+    rob = report.get("robustness", {}); summary = rob.get("robustness_summary", {})
+    lines.extend(["", "=== TRANSFORMATION STABILITY ===", f"  Enabled: {rob.get('enabled', False)}", f"  Tests: {summary.get('transformations_tested', 0)} | Changed: {summary.get('predictions_changed', 0)} | Stability: {summary.get('robustness_score', 0):.1%}"])
+    for item in rob.get("results", []): lines.append(f"  - {item.get('transformation')}: {item.get('prediction', 'Unknown')} ({item.get('confidence', 0):.1%}), changed={item.get('prediction_changed', False)}")
     cons = report.get("consistency", {})
-    lines.append(f"  Assessment: {cons.get('overall_assessment', 'N/A')}")
-    lines.append(f"  Flags: {', '.join(cons.get('consistency_flags', [])) or 'None'}")
-
-    if report.get("warnings"):
-        lines.extend(["", "=== WARNINGS ==="])
-        for w in report["warnings"]:
-            lines.append(f"  - {w}")
-
+    lines.extend(["", "=== ASSESSMENT ===", f"  {cons.get('overall_assessment', 'inconclusive')}"])
+    if report.get("warnings"): lines.extend(["", "=== LIMITATIONS / WARNINGS ==="] + [f"  - {w}" for w in report["warnings"]])
     return "\n".join(lines)

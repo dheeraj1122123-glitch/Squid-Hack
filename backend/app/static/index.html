@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CameraTrace — Digital Image Forensics & Camera Attribution Platform</title>
+  <title>CameraTrace â€” Digital Image Forensics & Camera Attribution Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -165,6 +165,22 @@
     #fileInput {
       display: none;
     }
+
+    .compare-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    .compare-input { width: 100%; color: var(--text-muted); margin-top: 8px; }
+    .primary-button {
+      margin-top: 18px; padding: 10px 18px; border: 0; border-radius: 9px;
+      background: linear-gradient(135deg, var(--accent), var(--primary)); color: #061019;
+      font-weight: 700; cursor: pointer;
+    }
+    .comparison-images { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+    .comparison-images img { width: 100%; max-height: 280px; object-fit: contain; background: #000; border-radius: 10px; }
 
     /* Processing Bar */
     .progress-card {
@@ -422,7 +438,7 @@
 
   <div class="header">
     <div class="brand">
-      <div class="brand-icon">📷</div>
+      <div class="brand-icon">ðŸ“·</div>
       <div>
         <div class="brand-title">CameraTrace</div>
         <div class="brand-subtitle">Explainable Digital Image Forensics & Source Camera Attribution</div>
@@ -438,10 +454,29 @@
     
     <!-- Upload Dropzone -->
     <div class="upload-card" id="dropzone">
-      <div class="upload-icon">🔍</div>
+      <div class="upload-icon">ðŸ”</div>
       <div class="upload-text">Drag & Drop Image Evidence Here</div>
       <div class="upload-subtext">Supports JPEG, PNG, TIFF, WebP, BMP (Max 25MB)</div>
       <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div class="compare-card">
+      <div class="card-title">Compare Original and Edited Image</div>
+      <div class="upload-subtext">Upload the original first, then its edited version. The tool highlights visual changes and likely modification types.</div>
+      <div class="grid-2" style="margin-top: 16px;">
+        <div><label class="metric-label" for="originalCompareInput">Original image</label><input class="compare-input" type="file" id="originalCompareInput" accept="image/*"></div>
+        <div><label class="metric-label" for="editedCompareInput">Edited image</label><input class="compare-input" type="file" id="editedCompareInput" accept="image/*"></div>
+      </div>
+      <button class="primary-button" id="compareButton" type="button">Compare Images</button>
+      <div id="comparisonStatus" class="upload-subtext" style="margin-top: 12px;"></div>
+      <div id="comparisonResult" style="display: none; margin-top: 18px;">
+        <div class="grid-3">
+          <div class="metric-box"><div class="metric-label">Changed area</div><div class="metric-value" id="compareChangedArea">-</div></div>
+          <div class="metric-box"><div class="metric-label">Alignment score</div><div class="metric-value" id="compareAlignment">-</div></div>
+          <div class="metric-box"><div class="metric-label">Detected modifications</div><div id="compareModifications" style="margin-top: 8px;"></div></div>
+        </div>
+        <div class="comparison-images"><div><div class="heatmap-label">Difference heatmap</div><img id="compareHeatmap" alt="Difference heatmap"></div><div><div class="heatmap-label">Changed-area overlay</div><img id="compareOverlay" alt="Changed-area overlay"></div></div>
+      </div>
     </div>
 
     <!-- Real-time Execution Bar -->
@@ -460,12 +495,12 @@
 
       <!-- Tabs Navigation -->
       <div class="tabs-nav">
-        <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview & Consistency</button>
-        <button class="tab-btn" onclick="switchTab('camera')">📷 Camera Attribution</button>
-        <button class="tab-btn" onclick="switchTab('manipulation')">🔍 Manipulation & Heatmaps</button>
-        <button class="tab-btn" onclick="switchTab('metadata')">📄 Metadata / EXIF</button>
-        <button class="tab-btn" onclick="switchTab('robustness')">🛡️ Robustness Matrix</button>
-        <button class="tab-btn" onclick="switchTab('report')">📋 Forensic Report</button>
+        <button class="tab-btn active" onclick="switchTab('overview')">ðŸ“Š Overview & Consistency</button>
+        <button class="tab-btn" onclick="switchTab('camera')">ðŸ“· Camera Attribution</button>
+        <button class="tab-btn" onclick="switchTab('manipulation')">ðŸ” Manipulation & Heatmaps</button>
+        <button class="tab-btn" onclick="switchTab('metadata')">ðŸ“„ Metadata / EXIF</button>
+        <button class="tab-btn" onclick="switchTab('robustness')">ðŸ›¡ï¸ Robustness Matrix</button>
+        <button class="tab-btn" onclick="switchTab('report')">ðŸ“‹ Forensic Report</button>
       </div>
 
       <!-- Tab 1: Overview -->
@@ -638,7 +673,7 @@
         <div class="card">
           <div class="card-title">
             <span>Machine-Readable & Human Forensic Report</span>
-            <a id="downloadReportBtn" class="btn" download="report.txt">⬇️ Download Report</a>
+            <a id="downloadReportBtn" class="btn" download="report.txt">â¬‡ï¸ Download Report</a>
           </div>
           <div class="report-output" id="reportText">Loading report...</div>
         </div>
@@ -655,6 +690,9 @@
     const stageText = document.getElementById('stageText');
     const percentText = document.getElementById('percentText');
     const resultsDashboard = document.getElementById('resultsDashboard');
+    const originalCompareInput = document.getElementById('originalCompareInput');
+    const editedCompareInput = document.getElementById('editedCompareInput');
+    const compareButton = document.getElementById('compareButton');
 
     dropzone.addEventListener('click', () => fileInput.click());
     dropzone.addEventListener('dragover', (e) => {
@@ -673,6 +711,41 @@
     fileInput.addEventListener('change', (e) => {
       if (e.target.files.length) {
         handleUpload(e.target.files[0]);
+      }
+    });
+
+    compareButton.addEventListener('click', async () => {
+      const original = originalCompareInput.files[0];
+      const edited = editedCompareInput.files[0];
+      const status = document.getElementById('comparisonStatus');
+      if (!original || !edited) {
+        status.innerText = 'Please choose both the original and edited image.';
+        return;
+      }
+      const formData = new FormData();
+      formData.append('original', original);
+      formData.append('edited', edited);
+      compareButton.disabled = true;
+      status.innerText = 'Aligning images and detecting visual changes…';
+      document.getElementById('comparisonResult').style.display = 'none';
+      try {
+        const response = await fetch('/api/v1/compare', { method: 'POST', body: formData });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || 'Comparison failed');
+        document.getElementById('compareChangedArea').innerText = `${result.changed_area_percent}%`;
+        document.getElementById('compareAlignment').innerText = `${(result.alignment_score * 100).toFixed(1)}%`;
+        document.getElementById('compareModifications').innerHTML = result.modifications
+          .map(item => `<span class="badge badge-warning">${item.replaceAll('_', ' ')}</span>`).join(' ');
+        document.getElementById('compareHeatmap').src = result.artifacts.difference_heatmap;
+        document.getElementById('compareOverlay').src = result.artifacts.change_overlay;
+        document.getElementById('comparisonResult').style.display = 'block';
+        status.innerText = result.changed_regions.length
+          ? `${result.changed_regions.length} significant changed region(s) located.`
+          : 'No significant localized region found.';
+      } catch (error) {
+        status.innerText = `Comparison failed: ${error.message}`;
+      } finally {
+        compareButton.disabled = false;
       }
     });
 
@@ -818,14 +891,15 @@
 
       // Manipulation
       const manip = res.manipulation || {};
-      const cm = manip.copy_move || {};
+      const cm = (manip.evidence && manip.evidence.copy_move) || manip.copy_move || {};
       document.getElementById('cmStatus').innerText = cm.copy_move_detected ? 'DETECTED' : 'NONE DETECTED';
       document.getElementById('cmStatus').className = cm.copy_move_detected ? 'metric-value badge-danger' : 'metric-value';
       document.getElementById('cmInliers').innerText = cm.ransac_inliers || 0;
 
-      const splice = manip.splicing || {};
+      const splice = (manip.evidence && manip.evidence.splice) || manip.splicing || {};
       document.getElementById('spliceProb').innerText = (splice.tampered_probability ? (splice.tampered_probability * 100).toFixed(1) + '%' : '0%');
-      const recomp = manip.compression ? manip.compression.possible_recompression : false;
+      const jpegEvidence = (manip.evidence && manip.evidence.jpeg) || manip.compression || {};
+      const recomp = jpegEvidence.possible_recompression || (jpegEvidence.compression_features && jpegEvidence.compression_features.possible_recompression) || false;
       document.getElementById('recompressionStatus').innerHTML = recomp ? 
         '<span class="badge badge-warning">POSSIBLE RECOMPRESSION</span>' : 
         '<span class="badge badge-success">SINGLE COMPRESSION</span>';
@@ -834,26 +908,30 @@
       const meta = res.metadata || {};
       const fields = meta.metadata_fields || {};
       const metaTable = document.getElementById('metadataTable');
-      const rows = Object.entries(fields).map(([k, v]) => `
+      const sources = meta.metadata_sources || [];
+      const rows = sources.length ? [`
+        <tr><td><strong>Detected sources</strong></td><td>${sources.join(', ')}</td></tr>
+      `] : [];
+      rows.push(...Object.entries(fields).map(([k, v]) => `
         <tr>
           <td><strong>${k}</strong></td>
           <td>${typeof v === 'object' ? JSON.stringify(v) : v}</td>
         </tr>
-      `);
-      metaTable.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="2">No EXIF Metadata Found</td></tr>';
+      `));
+      metaTable.innerHTML = rows.length ? rows.join('') : `<tr><td colspan="2">No embedded metadata found (EXIF, XMP, or container text)</td></tr>`;
 
       // Robustness
       const rob = res.robustness || {};
-      const robResults = rob.robustness_results || [];
+      const robResults = rob.results || rob.robustness_results || [];
       const robTable = document.getElementById('robustnessTable');
-      robTable.innerHTML = robResults.map(r => `
+      robTable.innerHTML = robResults.length ? robResults.map(r => `
         <tr>
           <td>${r.transformation}</td>
           <td><strong>${r.prediction || 'Unknown'}</strong></td>
           <td>${(r.confidence * 100).toFixed(1)}%</td>
           <td>${r.prediction_changed ? '<span class="badge badge-warning">YES</span>' : '<span class="badge badge-success">NO</span>'}</td>
         </tr>
-      `).join('');
+      `).join('') : '<tr><td colspan="4">No robustness results available for this analysis.</td></tr>';
 
       // Report
       const rep = res.report || {};

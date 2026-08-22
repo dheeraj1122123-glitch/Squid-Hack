@@ -29,7 +29,8 @@ class RobustnessService:
         transforms = self._generate_transforms(img, image_path)
         results = []
 
-        for name, transformed_path in transforms:
+        # Three representative transforms keep the upload workflow responsive.
+        for name, transformed_path in transforms[:3]:
             pred = self.camera_service.analyze(transformed_path)
             label = pred.get("full_label") or pred.get("model", "unknown")
             conf = pred.get("confidence", 0)

@@ -20,14 +20,29 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     if args.split_by == "device" and "physical_device" in df.columns:
-        groups = df["physical_device"].fillna(df.index.astype(str))
+        fallback = pd.Series(df.index.astype(str), index=df.index)
+        groups = df["physical_device"].astype("string").fillna(fallback)
     elif args.split_by == "scene" and "scene" in df.columns:
-        groups = df["scene"].fillna(df["camera_model"].fillna(df.index.astype(str)))
+        fallback = pd.Series(df.index.astype(str), index=df.index)
+        groups = df["scene"].astype("string").fillna(df["camera_model"].astype("string").fillna(fallback))
     else:
         groups = df.index
 
     if "camera_model" in df.columns:
         groups = df["camera_model"].astype(str) + "_" + groups.astype(str)
+
+    # A device-disjoint split is only valid when every camera class has at
+    # least two physical devices.  Otherwise it would silently put whole
+    # camera classes in test/train and produce misleading metrics.
+    if args.split_by == "device":
+        device_counts = df.assign(_group=groups).groupby("camera_model")["_group"].nunique()
+        invalid = device_counts[device_counts < 2]
+        if not invalid.empty:
+            labels = ", ".join(invalid.index.astype(str).tolist())
+            raise ValueError(
+                "Device-disjoint split unavailable: these models have fewer than two devices: " + labels +
+                ". Download the full Dresden dataset, or use --split-by image only for a non-real-world demo."
+            )
 
     splitter = GroupShuffleSplit(n_splits=1, test_size=args.test_size, random_state=42)
     train_idx, test_idx = next(splitter.split(df, groups=groups))

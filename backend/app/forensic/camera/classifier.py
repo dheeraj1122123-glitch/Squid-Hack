@@ -18,6 +18,7 @@ class CameraClassifier:
         self.label_encoder = None
         self.feature_names: list[str] = []
         self.trained = False
+        self.n_training_samples = 0
         self._load()
 
     def _load(self) -> None:
@@ -25,6 +26,7 @@ class CameraClassifier:
             registry = json.loads(self.registry_path.read_text())
             info = registry.get("camera_classifier", {})
             self.trained = info.get("trained", False)
+            self.n_training_samples = int(info.get("n_training_samples", 0))
 
         model_path = self.model_dir / "model.joblib"
         scaler_path = self.model_dir / "scaler.joblib"
@@ -41,6 +43,18 @@ class CameraClassifier:
                 self.feature_names = schema.get("feature_names", [])
 
     def predict(self, feature_vector: np.ndarray, feature_names: list[str]) -> dict[str, Any]:
+        if self.n_training_samples < settings.min_camera_training_samples:
+            return {
+                "status": "INSUFFICIENT_TRAINING_DATA",
+                "known_camera": False,
+                "manufacturer": None,
+                "model": "Unknown / Unseen Camera",
+                "confidence": 0.0,
+                "top_candidates": [],
+                "availability": True,
+                "message": "Camera ML model has insufficient real training images for reliable attribution.",
+            }
+
         if not self.trained or self.model is None:
             return {
                 "status": "MODEL_NOT_TRAINED",

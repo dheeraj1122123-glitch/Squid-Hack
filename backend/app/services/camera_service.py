@@ -11,6 +11,7 @@ from app.forensic.camera.jpeg import analyze_compression
 from app.forensic.camera.noise import analyze_noise
 from app.forensic.camera.prnu import analyze_prnu
 from app.forensic.camera.similarity import SimilaritySearch
+from app.forensic.metadata.extractor import extract_metadata
 from app.forensic.preprocessing.image_loader import load_image_rgb
 
 
@@ -31,6 +32,26 @@ class CameraService:
         residual = noise.pop("residual", None)
         feature_vector, feature_names = build_feature_vector(noise, cfa, freq, compression, prnu)
         prediction = self.classifier.predict(feature_vector, feature_names)
+        metadata = extract_metadata(image_path)
+
+        # Embedded camera fields are direct evidence, whether they originate in
+        # EXIF, XMP, PNG text, or another supported image container.
+        make = metadata.get("metadata_camera_make")
+        model = metadata.get("metadata_camera_model")
+        if make or model:
+            label = " ".join(part for part in (make, model) if part)
+            prediction.update({
+                "status": "METADATA_CAMERA_IDENTIFIED",
+                "known_camera": True,
+                "manufacturer": make,
+                "model": model or label,
+                "full_label": label,
+                "confidence": 0.95,
+                "uncertainty": 0.05,
+                "prediction_source": "EMBEDDED_METADATA",
+            })
+        else:
+            prediction.setdefault("prediction_source", "FORENSIC_ML")
 
         similar = self.similarity.search(feature_vector, top_k=5)
 
@@ -42,6 +63,7 @@ class CameraService:
                 "cfa": cfa,
                 "frequency": freq,
                 "compression": compression,
+                "metadata": metadata,
             },
             "similar_cameras": similar,
             "feature_vector": feature_vector.tolist(),

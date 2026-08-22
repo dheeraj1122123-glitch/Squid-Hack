@@ -10,6 +10,7 @@ from app.api.routes import (
     camera,
     camera_search,
     cases,
+    comparison,
     evidence,
     health,
     manipulation,
@@ -55,6 +56,7 @@ app.include_router(robustness.router, prefix=API_PREFIX)
 app.include_router(reports.router, prefix=API_PREFIX)
 app.include_router(cases.router, prefix=API_PREFIX)
 app.include_router(camera_search.router, prefix=API_PREFIX)
+app.include_router(comparison.router, prefix=API_PREFIX)
 
 
 from pathlib import Path

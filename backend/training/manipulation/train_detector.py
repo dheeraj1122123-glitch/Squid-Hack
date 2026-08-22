@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from tqdm import tqdm
 
 from app.forensic.manipulation.copy_move import detect_copy_move
@@ -60,19 +60,42 @@ def main():
     X = np.array(X)
     le = LabelEncoder()
     y_enc = le.fit_transform(y)
-    X_train, X_test, y_train, y_test = train_test_split(X, y_enc, test_size=0.2, random_state=42)
+    if len(le.classes_) < 2:
+        print("Training requires both AUTHENTIC and MANIPULATED images.")
+        return 1
+    class_counts = np.bincount(y_enc)
+    if class_counts.min() < 2:
+        print("Each class needs at least 2 images for a holdout evaluation.")
+        return 1
 
-    clf = RandomForestClassifier(n_estimators=100, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y_enc, test_size=0.2, random_state=42, stratify=y_enc
+    )
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    clf = RandomForestClassifier(
+        n_estimators=400, min_samples_leaf=2, class_weight="balanced", random_state=42, n_jobs=-1
+    )
     clf.fit(X_train, y_train)
     acc = clf.score(X_test, y_test)
 
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
     joblib.dump(clf, out / "manipulation_detector.joblib")
+    joblib.dump(scaler, out / "manipulation_scaler.joblib")
+    joblib.dump(le, out / "manipulation_label_encoder.joblib")
 
     registry_path = settings.model_dir / "registry.json"
     registry = json.loads(registry_path.read_text()) if registry_path.exists() else {}
-    registry["manipulation_detector"] = {"path": str(out / "manipulation_detector.joblib"), "trained": True, "accuracy": acc}
+    registry["manipulation_detector"] = {
+        "path": str(out / "manipulation_detector.joblib"),
+        "trained": True,
+        "accuracy": float(acc),
+        "classes": le.classes_.tolist(),
+        "n_samples": len(X),
+    }
     registry_path.write_text(json.dumps(registry, indent=2))
     print(f"Trained on {len(X)} samples, test accuracy: {acc:.4f}")
     return 0

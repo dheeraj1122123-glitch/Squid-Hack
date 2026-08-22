@@ -14,11 +14,7 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff", ".tif", ".bmp", ".webp"}
 
 
 def find_images(root: Path) -> list[Path]:
-    images = []
-    for p in root.rglob("*"):
-        if p.is_file() and p.suffix.lower() in IMAGE_EXTENSIONS:
-            images.append(p)
-    return sorted(images)
+    return sorted(p for p in root.rglob("*") if p.is_file() and p.suffix.lower() in IMAGE_EXTENSIONS)
 
 
 def sha256_file(path: Path) -> str:
@@ -38,22 +34,16 @@ def perceptual_hash(path: Path) -> str:
 
 
 def parse_dresden_label(path: Path, root: Path) -> dict[str, str | None]:
-    """Parse Dresden Image Database folder structure."""
-    rel = path.relative_to(root)
-    parts = rel.parts
-    manufacturer = parts[0] if len(parts) > 1 else None
-    camera_model = parts[1] if len(parts) > 2 else parts[0] if parts else None
-    device = None
-    for p in parts:
-        if re.match(r"^\d+$", p):
-            device = p
-    return {
-        "manufacturer": manufacturer,
-        "camera_model": f"{manufacturer}_{camera_model}" if manufacturer and camera_model else camera_model,
-        "physical_device": device,
-        "dataset": "dresden",
-    }
-
+    """Parse original and Kaggle-exported Dresden model/device folders."""
+    parts = path.relative_to(root).parts
+    candidates = [p for p in parts[:-1] if re.match(r"^.+_.+?(?:_\d+)?$", p)]
+    folder = candidates[-1] if candidates else (parts[-2] if len(parts) > 1 else "")
+    match = re.match(r"^(?P<label>.+)_(?P<device>\d+)$", folder)
+    label = match.group("label") if match else folder
+    device = match.group("device") if match else None
+    manufacturer, _, _ = label.partition("_")
+    return {"manufacturer": manufacturer or None, "camera_model": label or None,
+            "physical_device": device, "dataset": "dresden"}
 
 def parse_casia_label(path: Path, root: Path) -> dict[str, str | None]:
     rel = path.relative_to(root)

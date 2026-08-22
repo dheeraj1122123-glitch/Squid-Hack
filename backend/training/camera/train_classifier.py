@@ -30,6 +30,13 @@ def main():
 
     le = LabelEncoder()
     y_enc = le.fit_transform(y)
+    class_counts = np.bincount(y_enc)
+    if len(le.classes_) < 2:
+        print("Training requires images from at least two camera models.")
+        return 1
+    if class_counts.min() < 3:
+        print("Each camera model needs at least 3 training images for calibrated probabilities.")
+        return 1
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
@@ -47,7 +54,7 @@ def main():
         from sklearn.svm import SVC
         clf = SVC(probability=True, kernel="rbf", random_state=42)
 
-    clf = CalibratedClassifierCV(clf, cv=min(3, len(set(y_enc))))
+    clf = CalibratedClassifierCV(clf, cv=min(3, int(class_counts.min())))
     clf.fit(X_scaled, y_enc)
 
     out = Path(args.output_dir)
@@ -66,6 +73,8 @@ def main():
         "trained": True,
         "model_type": args.model,
         "n_classes": len(le.classes_),
+        "n_training_samples": int(len(X)),
+        "class_counts": {str(name): int(count) for name, count in zip(le.classes_, class_counts)},
     }
     registry_path.write_text(json.dumps(registry, indent=2))
     print(f"Trained {args.model} on {len(X)} samples, {len(le.classes_)} classes")

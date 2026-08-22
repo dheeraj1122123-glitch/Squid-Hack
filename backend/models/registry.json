@@ -5,7 +5,12 @@
     "feature_schema": "models\\camera\\feature_schema.json",
     "trained": true,
     "model_type": "xgboost",
-    "n_classes": 3
+    "n_classes": 2,
+    "n_training_samples": 306,
+    "class_counts": {
+      "Agfa_DC-504": 82,
+      "Agfa_DC-733s": 224
+    }
   },
   "camera_residual_model": {
     "path": "models/camera/camera_residual_model.pt",

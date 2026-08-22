@@ -35,12 +35,13 @@ class Settings(BaseSettings):
     manipulation_model_path: str = ""
     ai_generation_model_path: str = ""
     enable_robustness: bool = True
-    enable_ai_detector: bool = False
+    enable_ai_detector: bool = True
     camera_classification_mode: Literal["hierarchical", "flat"] = "hierarchical"
     demo_mode: bool = False
     log_level: str = "INFO"
     allowed_extensions: str = "jpg,jpeg,png,tiff,bmp,webp"
-    unknown_camera_threshold: float = 0.35
+    unknown_camera_threshold: float = 0.70
+    min_camera_training_samples: int = 100
     prnu_correlation_threshold: float = 0.01
 
     @property

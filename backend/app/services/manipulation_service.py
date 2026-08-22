@@ -1,6 +1,7 @@
 """Manipulation detection orchestration service."""
 from pathlib import Path
 
+from app.forensic.manipulation.ai_generator_detector import AIGeneratorDetector
 from app.forensic.manipulation.copy_move import detect_copy_move
 from app.forensic.manipulation.ela import analyze_ela
 from app.forensic.manipulation.jpeg_analysis import analyze_jpeg_manipulation
@@ -14,6 +15,7 @@ from app.forensic.preprocessing.image_loader import load_image_rgb
 class ManipulationService:
     def __init__(self):
         self.classifier = ManipulationClassifier()
+        self.ai_detector = AIGeneratorDetector()
 
     def analyze(self, image_path: Path, artifact_dir: Path | None = None) -> dict:
         img = load_image_rgb(image_path)
@@ -63,9 +65,15 @@ class ManipulationService:
         if overall < 0.3 and not indicators:
             types.append("AUTHENTIC")
 
-        learned = self.classifier.predict(
-            __import__("numpy").array([overall, noise.get("local_noise_anomaly_score", 0), splice.get("tampered_probability", 0)])
-        )
+        learned_features = __import__("numpy").array([
+            noise.get("local_noise_anomaly_score", 0),
+            splice.get("tampered_probability", 0),
+            jpeg.get("compression_inconsistency_score", 0),
+            copy_move.get("confidence", 0),
+            float(copy_move.get("copy_move_detected", False)),
+        ])
+        learned = self.classifier.predict(learned_features)
+        ai_generated = self.ai_detector.predict(img)
 
         status = "potentially_manipulated" if overall > 0.5 else "suspicious" if overall > 0.3 else "consistent"
 
@@ -83,6 +91,7 @@ class ManipulationService:
             "possible_recompression": jpeg.get("compression_features", {}).get("possible_recompression", False),
             "learned_detector_status": learned.get("status"),
             "learned_prediction": learned.get("predicted_type"),
+            "ai_generated": ai_generated,
             "limitations": [
                 "Forensic indicators are not definitive proof of manipulation",
                 "ELA alone cannot prove tampering",
