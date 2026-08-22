@@ -1,0 +1,30 @@
+{
+  "camera_classifier": {
+    "path": "models/camera/model.joblib",
+    "scaler_path": "models/camera/scaler.joblib",
+    "label_encoder_path": "models/camera/label_encoder.joblib",
+    "feature_schema_path": "models/camera/feature_schema.json",
+    "version": "0.1.0",
+    "trained": false
+  },
+  "camera_residual_model": {
+    "path": "models/camera/camera_residual_model.pt",
+    "version": "0.1.0",
+    "trained": false
+  },
+  "manipulation_detector": {
+    "path": "models/manipulation/manipulation_detector.joblib",
+    "version": "0.1.0",
+    "trained": false
+  },
+  "manipulation_localizer": {
+    "path": "models/manipulation/manipulation_localizer.pt",
+    "version": "0.1.0",
+    "trained": false
+  },
+  "ai_generation_detector": {
+    "path": "models/manipulation/ai_generation_model.pt",
+    "version": "0.1.0",
+    "trained": false
+  }
+}
