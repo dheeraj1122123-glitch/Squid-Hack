@@ -53,15 +53,19 @@ async def upload_image(
 
 
 @router.post("/{analysis_id}/run")
-def run_analysis(analysis_id: str, db: Session = Depends(get_db)):
+def run_analysis(analysis_id: str, sync: bool = False, db: Session = Depends(get_db)):
     repo = AnalysisRepository(db)
     analysis = repo.get_by_analysis_id(analysis_id)
     if not analysis:
         raise HTTPException(status_code=404, detail="Analysis not found")
 
     svc = AnalysisService(db)
-    svc.run_analysis_async(analysis_id)
-    return {"analysis_id": analysis_id, "status": "QUEUED", "message": "Analysis started"}
+    if sync:
+        res = svc.run_analysis(analysis_id)
+        return {"analysis_id": analysis_id, "status": "COMPLETED", "result": res}
+    else:
+        svc.run_analysis_async(analysis_id)
+        return {"analysis_id": analysis_id, "status": "QUEUED", "message": "Analysis started"}
 
 
 @router.get("/{analysis_id}", response_model=AnalysisResultResponse)

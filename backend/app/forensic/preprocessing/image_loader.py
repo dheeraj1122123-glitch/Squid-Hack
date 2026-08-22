@@ -10,9 +10,21 @@ from app.core.exceptions import ImageValidationError
 
 def load_image_bgr(path: Path | str) -> np.ndarray:
     path = Path(path)
-    img = cv2.imdecode(np.fromfile(str(path), dtype=np.uint8), cv2.IMREAD_COLOR)
+    if not path.exists():
+        raise ImageValidationError(f"File not found: {path}")
+    try:
+        data = np.fromfile(str(path), dtype=np.uint8)
+        img = cv2.imdecode(data, cv2.IMREAD_COLOR)
+    except Exception:
+        img = None
+
     if img is None:
-        raise ImageValidationError(f"Cannot decode image: {path}")
+        try:
+            with Image.open(path) as im:
+                rgb = np.array(im.convert("RGB"))
+                img = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+        except Exception as e:
+            raise ImageValidationError(f"Cannot decode image: {path} ({e})")
     return img
 
 
@@ -23,9 +35,20 @@ def load_image_rgb(path: Path | str) -> np.ndarray:
 
 def load_image_gray(path: Path | str) -> np.ndarray:
     path = Path(path)
-    img = cv2.imdecode(np.fromfile(str(path), dtype=np.uint8), cv2.IMREAD_GRAYSCALE)
+    if not path.exists():
+        raise ImageValidationError(f"File not found: {path}")
+    try:
+        data = np.fromfile(str(path), dtype=np.uint8)
+        img = cv2.imdecode(data, cv2.IMREAD_GRAYSCALE)
+    except Exception:
+        img = None
+
     if img is None:
-        raise ImageValidationError(f"Cannot decode grayscale image: {path}")
+        try:
+            with Image.open(path) as im:
+                img = np.array(im.convert("L"))
+        except Exception as e:
+            raise ImageValidationError(f"Cannot decode grayscale image: {path} ({e})")
     return img
 
 

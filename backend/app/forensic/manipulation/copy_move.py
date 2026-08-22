@@ -44,19 +44,30 @@ def detect_copy_move(img: np.ndarray, min_matches: int = 10) -> dict[str, Any]:
     matches = bf.knnMatch(des, des, k=3)
 
     good = []
+    pts1, pts2 = [], []
     for m_list in matches:
         if len(m_list) < 2:
             continue
         m, n = m_list[0], m_list[1]
-        if m.queryIdx != m.trainIdx and m.distance < 0.7 * n.distance:
+        if m.queryIdx != m.trainIdx and m.distance < 0.75 * n.distance:
             pt1 = kp[m.queryIdx].pt
             pt2 = kp[m.trainIdx].pt
             dist = np.sqrt((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2)
             if dist > 30:
                 good.append((pt1, pt2, m.distance))
+                pts1.append(pt1)
+                pts2.append(pt2)
 
-    detected = len(good) >= min_matches
-    confidence = min(1.0, len(good) / (min_matches * 3)) if detected else 0.0
+    inliers_count = 0
+    if len(pts1) >= 4:
+        p1 = np.float32(pts1).reshape(-1, 1, 2)
+        p2 = np.float32(pts2).reshape(-1, 1, 2)
+        _, mask = cv2.findHomography(p1, p2, cv2.RANSAC, 5.0)
+        if mask is not None:
+            inliers_count = int(np.sum(mask))
+
+    detected = len(good) >= min_matches and inliers_count >= 4
+    confidence = min(1.0, inliers_count / (min_matches * 2)) if detected else 0.0
 
     heatmap = np.zeros((h, w), dtype=np.float32)
     regions = []
@@ -72,8 +83,10 @@ def detect_copy_move(img: np.ndarray, min_matches: int = 10) -> dict[str, Any]:
         "copy_move_detected": detected,
         "confidence": confidence,
         "match_count": len(good),
+        "ransac_inliers": inliers_count,
         "matched_regions": regions[:20],
         "heatmap": heatmap,
         "availability": True,
-        "limitations": ["Baseline detector; repeated textures may cause false positives"],
+        "limitations": ["RANSAC verified baseline; extreme warping or heavy compression may impact detection"],
     }
+

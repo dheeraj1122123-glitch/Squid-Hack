@@ -57,6 +57,17 @@ app.include_router(cases.router, prefix=API_PREFIX)
 app.include_router(camera_search.router, prefix=API_PREFIX)
 
 
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse
+
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+
+app.mount("/artifacts", StaticFiles(directory=str(settings.artifact_dir)), name="artifacts")
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+
 @app.exception_handler(ImageValidationError)
 async def image_validation_handler(request: Request, exc: ImageValidationError):
     return JSONResponse(status_code=400, content={"detail": exc.message, **exc.details})
@@ -69,6 +80,9 @@ async def camera_trace_handler(request: Request, exc: CameraTraceError):
 
 @app.get("/")
 def root():
+    index_file = STATIC_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
     return {
         "service": "CameraTrace",
         "docs": "/docs",

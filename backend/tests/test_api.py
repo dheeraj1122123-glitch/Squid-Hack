@@ -34,14 +34,8 @@ def test_upload_and_analyze(test_image):
     assert "sha256" in data
     analysis_id = data["analysis_id"]
 
-    response = client.post(f"/api/v1/analysis/{analysis_id}/run")
+    response = client.post(f"/api/v1/analysis/{analysis_id}/run?sync=true")
     assert response.status_code == 200
-
-    for _ in range(60):
-        status = client.get(f"/api/v1/analysis/{analysis_id}/status").json()
-        if status["status"] in ("COMPLETED", "FAILED"):
-            break
-        time.sleep(1)
 
     result = client.get(f"/api/v1/analysis/{analysis_id}").json()
     assert result["status"] in ("COMPLETED", "FAILED", "REPORT_GENERATION")

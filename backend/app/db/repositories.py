@@ -14,6 +14,9 @@ from app.db.models import (
 )
 
 
+from app.core.utils import sanitize_for_json
+
+
 class AnalysisRepository:
     def __init__(self, db: Session):
         self.db = db
@@ -42,27 +45,30 @@ class AnalysisRepository:
     def save_result(self, analysis_id: str, result: dict) -> None:
         a = self.get_by_analysis_id(analysis_id)
         if a:
-            a.result_json = result
+            a.result_json = sanitize_for_json(result)
             a.status = "COMPLETED"
             a.progress = 100.0
             a.completed_at = datetime.now(timezone.utc)
             self.db.commit()
 
     def save_evidence(self, analysis_db_id: int, data: dict) -> Evidence:
-        e = Evidence(analysis_id=analysis_db_id, **data)
+        clean_data = sanitize_for_json(data)
+        e = Evidence(analysis_id=analysis_db_id, **clean_data)
         self.db.add(e)
         self.db.commit()
         self.db.refresh(e)
         return e
 
     def save_camera_prediction(self, analysis_db_id: int, data: dict) -> CameraPrediction:
-        cp = CameraPrediction(analysis_id=analysis_db_id, **data)
+        clean_data = sanitize_for_json(data)
+        cp = CameraPrediction(analysis_id=analysis_db_id, **clean_data)
         self.db.add(cp)
         self.db.commit()
         return cp
 
     def save_manipulation_result(self, analysis_db_id: int, data: dict) -> ManipulationResult:
-        mr = ManipulationResult(analysis_id=analysis_db_id, **data)
+        clean_data = sanitize_for_json(data)
+        mr = ManipulationResult(analysis_id=analysis_db_id, **clean_data)
         self.db.add(mr)
         self.db.commit()
         return mr
@@ -73,7 +79,7 @@ class AnalysisRepository:
 
     def save_robustness(self, analysis_db_id: int, results: list[dict]) -> None:
         for r in results:
-            self.db.add(RobustnessResult(analysis_id=analysis_db_id, **r))
+            self.db.add(RobustnessResult(analysis_id=analysis_db_id, **sanitize_for_json(r)))
         self.db.commit()
 
 

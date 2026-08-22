@@ -1,11 +1,11 @@
 {
   "camera_classifier": {
-    "path": "models/camera/model.joblib",
-    "scaler_path": "models/camera/scaler.joblib",
-    "label_encoder_path": "models/camera/label_encoder.joblib",
-    "feature_schema_path": "models/camera/feature_schema.json",
-    "version": "0.1.0",
-    "trained": false
+    "path": "models\\camera\\model.joblib",
+    "version": "1.0.0",
+    "feature_schema": "models\\camera\\feature_schema.json",
+    "trained": true,
+    "model_type": "xgboost",
+    "n_classes": 3
   },
   "camera_residual_model": {
     "path": "models/camera/camera_residual_model.pt",

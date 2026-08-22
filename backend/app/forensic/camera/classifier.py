@@ -86,6 +86,21 @@ class CameraClassifier:
         known = confidence >= settings.unknown_camera_threshold
         manufacturer, model_name = self._parse_label(label)
 
+        # Hierarchical classification mode handling
+        if settings.camera_classification_mode == "hierarchical" and known:
+            # Stage 1: Manufacturer probability aggregation
+            mfg_scores: dict[str, float] = {}
+            if hasattr(self.model, "predict_proba"):
+                classes = self.label_encoder.classes_
+                for idx, class_label in enumerate(classes):
+                    mfg, _ = self._parse_label(str(class_label))
+                    mfg_key = mfg or "Unknown"
+                    mfg_scores[mfg_key] = mfg_scores.get(mfg_key, 0.0) + float(proba[idx])
+                if mfg_scores:
+                    best_mfg = max(mfg_scores, key=mfg_scores.get)
+                    if manufacturer and best_mfg != manufacturer and mfg_scores[best_mfg] > 0.5:
+                        manufacturer = best_mfg
+
         return {
             "status": "success" if known else "UNKNOWN_CAMERA",
             "known_camera": known,
@@ -93,6 +108,7 @@ class CameraClassifier:
             "model": model_name if known else "Unknown / Unseen Camera",
             "full_label": label,
             "confidence": confidence,
+            "classification_mode": settings.camera_classification_mode,
             "uncertainty": float(1.0 - confidence),
             "top_candidates": top_candidates,
             "availability": True,
@@ -104,3 +120,4 @@ class CameraClassifier:
         if len(parts) == 2:
             return parts[0], parts[1]
         return None, label
+

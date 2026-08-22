@@ -17,8 +17,10 @@ def verify():
         ("camera/dresden", "dresden", "camera"),
         ("camera/nist_mfc", "nist_mfc", "camera"),
         ("camera/vision", "vision", "camera"),
+        ("camera/demo", "demo", "camera"),
         ("manipulation/casia2", "casia", "manipulation"),
         ("manipulation/fau", "fau", "manipulation"),
+        ("manipulation/demo", "demo", "manipulation"),
     ]
 
     any_found = False

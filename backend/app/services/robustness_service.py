@@ -58,24 +58,26 @@ class RobustnessService:
         }
 
     def _generate_transforms(self, img: np.ndarray, original_path: Path) -> list[tuple[str, Path]]:
+        import uuid
         tmp_dir = settings.artifact_dir / "robustness_tmp"
         tmp_dir.mkdir(parents=True, exist_ok=True)
         transforms: list[tuple[str, Path]] = []
+        uid = uuid.uuid4().hex[:8]
 
         for quality in (90, 70, 50):
-            p = tmp_dir / f"jpeg_q{quality}.jpg"
+            p = tmp_dir / f"{uid}_jpeg_q{quality}.jpg"
             Image.fromarray(img).save(p, format="JPEG", quality=quality)
             transforms.append((f"jpeg_quality_{quality}", p))
 
         for scale, label in [(0.75, "75pct"), (0.5, "50pct")]:
             h, w = img.shape[:2]
             resized = cv2.resize(img, (int(w * scale), int(h * scale)))
-            p = tmp_dir / f"resize_{label}.png"
+            p = tmp_dir / f"{uid}_resize_{label}.png"
             cv2.imwrite(str(p), cv2.cvtColor(resized, cv2.COLOR_RGB2BGR))
             transforms.append((f"resize_{label}", p))
 
         bright = np.clip(img.astype(np.float32) * 1.1, 0, 255).astype(np.uint8)
-        p = tmp_dir / "brightness.png"
+        p = tmp_dir / f"{uid}_brightness.png"
         cv2.imwrite(str(p), cv2.cvtColor(bright, cv2.COLOR_RGB2BGR))
         transforms.append(("brightness_up_10pct", p))
 

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.logging import get_logger, log_stage
+from app.core.utils import sanitize_for_json
 from app.db.repositories import AnalysisRepository
 from app.forensic.fusion.consistency_engine import ConsistencyEngine
 from app.forensic.fusion.evidence_fusion import fuse_module_evidence
@@ -112,9 +113,10 @@ class AnalysisService:
 
                 log_stage(logger, analysis_id, stage, "completed", (time.perf_counter() - t0) * 1000)
 
-            self.repo.save_result(analysis_id, result)
+            clean_result = sanitize_for_json(result)
+            self.repo.save_result(analysis_id, clean_result)
             self.repo.update_status(analysis_id, "COMPLETED", 100.0)
-            return result
+            return clean_result
 
         except Exception as e:
             logger.exception("Analysis failed", extra={"analysis_id": analysis_id})

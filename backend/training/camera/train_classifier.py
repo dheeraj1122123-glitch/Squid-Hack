@@ -38,7 +38,6 @@ def main():
             n_estimators=200,
             max_depth=6,
             learning_rate=0.1,
-            use_label_encoder=False,
             eval_metric="mlogloss",
             random_state=42,
         )

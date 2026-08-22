@@ -36,17 +36,44 @@ def highpass_residual(img: np.ndarray, ksize: int = 3) -> np.ndarray:
     return out
 
 
+def wavelet_residual(img: np.ndarray) -> np.ndarray:
+    """Extract wavelet high-frequency noise residual using 2D Haar wavelets."""
+    f = to_float01(img)
+    kernel_h = np.array([[-0.5, 0.5]], dtype=np.float32)
+    kernel_v = np.array([[-0.5], [0.5]], dtype=np.float32)
+    kernel_d = np.array([[0.25, -0.25], [-0.25, 0.25]], dtype=np.float32)
+    
+    if f.ndim == 2:
+        lh = ndimage.convolve(f, kernel_h)
+        hl = ndimage.convolve(f, kernel_v)
+        hh = ndimage.convolve(f, kernel_d)
+        return (lh + hl + hh) / 3.0
+    
+    out = np.zeros_like(f)
+    for c in range(f.shape[2]):
+        ch = f[:, :, c]
+        lh = ndimage.convolve(ch, kernel_h)
+        hl = ndimage.convolve(ch, kernel_v)
+        hh = ndimage.convolve(ch, kernel_d)
+        out[:, :, c] = (lh + hl + hh) / 3.0
+    return out
+
+
 def extract_noise_residual(img: np.ndarray, method: str = "gaussian") -> np.ndarray:
     f = to_float01(img)
     if method == "gaussian":
         denoised = gaussian_denoise(img)
+        return f - denoised
     elif method == "median":
         denoised = median_denoise(img)
+        return f - denoised
     elif method == "highpass":
         return highpass_residual(img)
+    elif method == "wavelet":
+        return wavelet_residual(img)
     else:
         denoised = gaussian_denoise(img)
-    return f - denoised
+        return f - denoised
 
 
 def residual_statistics(residual: np.ndarray) -> dict[str, float]:

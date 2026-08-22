@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CameraTrace — Digital Image Forensics & Camera Attribution Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --card-bg: rgba(17, 24, 39, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --card-hover-border: rgba(0, 242, 254, 0.4);
+      --primary: #00f2fe;
+      --primary-glow: rgba(0, 242, 254, 0.25);
+      --accent: #4facfe;
+      --accent-purple: #7928ca;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --success: #00e676;
+      --warning: #ffab00;
+      --danger: #ff1744;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(121, 40, 202, 0.08) 0%, transparent 45%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1300px;
+      margin: 0 auto 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #ffffff, var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 230, 118, 0.1);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      color: var(--success);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    /* Upload Box */
+    .upload-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 2px dashed var(--card-border);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-card:hover, .upload-card.dragover {
+      border-color: var(--primary);
+      box-shadow: 0 0 30px var(--primary-glow);
+      background: rgba(20, 30, 50, 0.85);
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+
+    .upload-card:hover .upload-icon {
+      transform: translateY(-4px);
+    }
+
+    .upload-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .upload-subtext {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    /* Processing Bar */
+    .progress-card {
+      display: none;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .progress-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .progress-percent {
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--primary));
+      border-radius: 5px;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 12px var(--primary);
+    }
+
+    /* Tabs Layout */
+    .tabs-nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.2));
+      border: 1px solid var(--primary);
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Dashboard Cards Grid */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      transition: border-color 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: var(--card-hover-border);
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .metric-box {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    /* Badges */
+    .badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-success { background: rgba(0, 230, 118, 0.2); color: var(--success); border: 1px solid var(--success); }
+    .badge-warning { background: rgba(255, 171, 0, 0.2); color: var(--warning); border: 1px solid var(--warning); }
+    .badge-danger { background: rgba(255, 23, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+    .badge-info { background: rgba(0, 242, 254, 0.2); color: var(--primary); border: 1px solid var(--primary); }
+
+    /* Heatmaps Grid */
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .heatmap-card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .heatmap-img {
+      width: 100%;
+      height: 200px;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .heatmap-label {
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .report-output {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      max-height: 500px;
+      overflow-y: auto;
+      color: #38bdf8;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      border: none;
+      color: #000;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      box-shadow: 0 0 20px var(--primary-glow);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 900px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-icon">📷</div>
+      <div>
+        <div class="brand-title">CameraTrace</div>
+        <div class="brand-subtitle">Explainable Digital Image Forensics & Source Camera Attribution</div>
+      </div>
+    </div>
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      Engine Active (v1.0)
+    </div>
+  </div>
+
+  <div class="container">
+    
+    <!-- Upload Dropzone -->
+    <div class="upload-card" id="dropzone">
+      <div class="upload-icon">🔍</div>
+      <div class="upload-text">Drag & Drop Image Evidence Here</div>
+      <div class="upload-subtext">Supports JPEG, PNG, TIFF, WebP, BMP (Max 25MB)</div>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <!-- Real-time Execution Bar -->
+    <div class="progress-card" id="progressCard">
+      <div class="progress-header">
+        <div class="progress-title" id="stageText">Initializing Forensic Pipeline...</div>
+        <div class="progress-percent" id="percentText">0%</div>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+    </div>
+
+    <!-- Main Results Dashboard (Hidden until analysis completes) -->
+    <div id="resultsDashboard" style="display: none;">
+
+      <!-- Tabs Navigation -->
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview & Consistency</button>
+        <button class="tab-btn" onclick="switchTab('camera')">📷 Camera Attribution</button>
+        <button class="tab-btn" onclick="switchTab('manipulation')">🔍 Manipulation & Heatmaps</button>
+        <button class="tab-btn" onclick="switchTab('metadata')">📄 Metadata / EXIF</button>
+        <button class="tab-btn" onclick="switchTab('robustness')">🛡️ Robustness Matrix</button>
+        <button class="tab-btn" onclick="switchTab('report')">📋 Forensic Report</button>
+      </div>
+
+      <!-- Tab 1: Overview -->
+      <div class="tab-content active" id="tab-overview">
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title">Consistency Assessment</div>
+            <div class="metric-box" style="text-align: center;">
+              <span class="badge" id="assessmentBadge">PENDING</span>
+              <div class="metric-value" id="assessmentText" style="font-size: 18px; margin-top: 10px;">-</div>
+            </div>
+            <div class="metric-label" style="margin-top: 12px;">Active Consistency Flags</div>
+            <div id="flagsContainer" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Evidence Hash & Metadata</div>
+            <div class="metric-box">
+              <div class="metric-label">Filename</div>
+              <div id="infoFilename" style="font-size: 14px; font-weight: 600; word-break: break-all;">-</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">SHA-256 Checksum</div>
+              <div id="infoHash" style="font-size: 11px; font-family: monospace; color: var(--primary); word-break: break-all;">-</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Source Attribution Summary</div>
+            <div class="metric-box">
+              <div class="metric-label">Predicted Camera</div>
+              <div class="metric-value" id="infoCamModel" style="color: var(--primary);">-</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">Model Confidence</div>
+              <div class="metric-value" id="infoCamConf">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Camera Attribution -->
+      <div class="tab-content" id="tab-camera">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Source Attribution Predictions</div>
+            <div class="metric-box">
+              <div class="metric-label">Manufacturer</div>
+              <div class="metric-value" id="camManufacturer">-</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">Camera Model</div>
+              <div class="metric-value" id="camModelFull" style="color: var(--primary);">-</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">Open-Set Rejection Status</div>
+              <div id="camKnownStatus" style="font-weight: 600; margin-top: 4px;">-</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Top Candidate Camera Models</div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Camera Model</th>
+                    <th>Confidence</th>
+                  </tr>
+                </thead>
+                <tbody id="topCandidatesTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Manipulation & Heatmaps -->
+      <div class="tab-content" id="tab-manipulation">
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-title">Forensic Signal Artifact Maps</div>
+          <div class="heatmap-grid" id="heatmapGrid">
+            <div class="heatmap-card">
+              <img id="imgNoiseResidual" class="heatmap-img" src="" alt="Noise Residual">
+              <div class="heatmap-label">Noise Residual Map (Gaussian Filter)</div>
+            </div>
+            <div class="heatmap-card">
+              <img id="imgFrequencySpectrum" class="heatmap-img" src="" alt="Frequency Spectrum">
+              <div class="heatmap-label">2D FFT Spectral Magnitude</div>
+            </div>
+            <div class="heatmap-card">
+              <img id="imgEla" class="heatmap-img" src="" alt="ELA Map">
+              <div class="heatmap-label">Error Level Analysis (ELA)</div>
+            </div>
+            <div class="heatmap-card">
+              <img id="imgLocalNoise" class="heatmap-img" src="" alt="Local Noise Heatmap">
+              <div class="heatmap-label">Local Noise Anomaly Map</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Copy-Move Forgery Verification</div>
+            <div class="metric-box">
+              <div class="metric-label">Copy-Move Detected</div>
+              <div id="cmStatus" class="metric-value">-</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">RANSAC Homography Inliers</div>
+              <div id="cmInliers" class="metric-value">-</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Splicing & Patch Anomaly Analysis</div>
+            <div class="metric-box">
+              <div class="metric-label">Splicing Probability</div>
+              <div id="spliceProb" class="metric-value">-</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">Recompression Indicator</div>
+              <div id="recompressionStatus" style="font-weight: 600; margin-top: 4px;">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Metadata -->
+      <div class="tab-content" id="tab-metadata">
+        <div class="card">
+          <div class="card-title">Extracted EXIF Header Metadata</div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Field Tag</th>
+                  <th>Extracted Value</th>
+                </tr>
+              </thead>
+              <tbody id="metadataTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 5: Robustness -->
+      <div class="tab-content" id="tab-robustness">
+        <div class="card">
+          <div class="card-title">Transformation Stability Test Matrix</div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Transformation</th>
+                  <th>Predicted Camera</th>
+                  <th>Confidence</th>
+                  <th>Prediction Changed</th>
+                </tr>
+              </thead>
+              <tbody id="robustnessTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 6: Forensic Report -->
+      <div class="tab-content" id="tab-report">
+        <div class="card">
+          <div class="card-title">
+            <span>Machine-Readable & Human Forensic Report</span>
+            <a id="downloadReportBtn" class="btn" download="report.txt">⬇️ Download Report</a>
+          </div>
+          <div class="report-output" id="reportText">Loading report...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const progressCard = document.getElementById('progressCard');
+    const progressBar = document.getElementById('progressBar');
+    const stageText = document.getElementById('stageText');
+    const percentText = document.getElementById('percentText');
+    const resultsDashboard = document.getElementById('resultsDashboard');
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        handleUpload(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) {
+        handleUpload(e.target.files[0]);
+      }
+    });
+
+    async function handleUpload(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      progressCard.style.display = 'block';
+      resultsDashboard.style.display = 'none';
+      updateProgress('Uploading Image Evidence...', 5);
+
+      try {
+        const uploadRes = await fetch('/api/v1/analysis/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const uploadData = await uploadRes.json();
+
+        if (!uploadRes.ok) {
+          alert('Upload failed: ' + (uploadData.detail || 'Invalid image'));
+          progressCard.style.display = 'none';
+          return;
+        }
+
+        const analysisId = uploadData.analysis_id;
+        updateProgress('Submitting to Pipeline...', 10);
+
+        const runRes = await fetch(`/api/v1/analysis/${analysisId}/run`, { method: 'POST' });
+        if (!runRes.ok) {
+          alert('Failed to start analysis pipeline');
+          progressCard.style.display = 'none';
+          return;
+        }
+
+        // Poll status every 500ms
+        const pollInterval = setInterval(async () => {
+          try {
+            const statusRes = await fetch(`/api/v1/analysis/${analysisId}/status`);
+            const statusData = await statusRes.json();
+            
+            const stage = statusData.status || 'QUEUED';
+            const progress = Math.min(100, Math.max(10, Math.round(statusData.progress || 0)));
+            updateProgress(`Processing: ${stage.replace('_', ' ')}`, progress);
+
+            if (stage === 'COMPLETED') {
+              clearInterval(pollInterval);
+              const resultRes = await fetch(`/api/v1/analysis/${analysisId}`);
+              const resultData = await resultRes.json();
+              updateProgress('Complete!', 100);
+              setTimeout(() => {
+                progressCard.style.display = 'none';
+                renderDashboard(analysisId, resultData.result);
+              }, 400);
+            } else if (stage === 'FAILED') {
+              clearInterval(pollInterval);
+              alert('Analysis failed: ' + (statusData.error || 'Unknown processing error'));
+              progressCard.style.display = 'none';
+            }
+          } catch (err) {
+            console.error('Polling error:', err);
+          }
+        }, 500);
+
+      } catch (err) {
+        console.error(err);
+        alert('Error communicating with backend: ' + err.message);
+        progressCard.style.display = 'none';
+      }
+    }
+
+    function updateProgress(stage, percent) {
+      stageText.innerText = stage;
+      percentText.innerText = percent + '%';
+      progressBar.style.width = percent + '%';
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
+
+    function renderDashboard(analysisId, res) {
+      resultsDashboard.style.display = 'block';
+
+      // 1. Overview
+      const ev = res.evidence || {};
+      document.getElementById('infoFilename').innerText = ev.filename || '-';
+      document.getElementById('infoHash').innerText = ev.sha256 || '-';
+
+      const cons = res.consistency || {};
+      const assessment = cons.overall_assessment || 'Inconclusive';
+      document.getElementById('assessmentText').innerText = assessment.toUpperCase();
+
+      const badge = document.getElementById('assessmentBadge');
+      if (assessment.includes('consistent')) {
+        badge.className = 'badge badge-success';
+        badge.innerText = 'CONSISTENT';
+      } else if (assessment.includes('suspicious')) {
+        badge.className = 'badge badge-warning';
+        badge.innerText = 'SUSPICIOUS';
+      } else if (assessment.includes('manipulated')) {
+        badge.className = 'badge badge-danger';
+        badge.innerText = 'MANIPULATED';
+      } else {
+        badge.className = 'badge badge-info';
+        badge.innerText = 'INCONCLUSIVE';
+      }
+
+      const flags = cons.consistency_flags || [];
+      const flagsContainer = document.getElementById('flagsContainer');
+      flagsContainer.innerHTML = flags.length ? flags.map(f => `<span class="badge badge-warning">${f}</span>`).join('') : '<span class="badge badge-success">NO FLAGS</span>';
+
+      // Camera
+      const cam = res.camera || {};
+      document.getElementById('infoCamModel').innerText = cam.model || 'Unknown';
+      document.getElementById('infoCamConf').innerText = (cam.confidence ? (cam.confidence * 100).toFixed(1) + '%' : '0%');
+
+      document.getElementById('camManufacturer').innerText = cam.manufacturer || 'Unknown';
+      document.getElementById('camModelFull').innerText = cam.model || 'Unknown';
+      document.getElementById('camKnownStatus').innerHTML = cam.known_camera ? 
+        '<span class="badge badge-success">KNOWN CAMERA MODEL</span>' : 
+        '<span class="badge badge-warning">UNKNOWN / UNSEEN CAMERA</span>';
+
+      const topTable = document.getElementById('topCandidatesTable');
+      const candidates = cam.top_candidates || [];
+      topTable.innerHTML = candidates.map(c => `
+        <tr>
+          <td>#${c.rank}</td>
+          <td><strong>${c.camera_model}</strong></td>
+          <td>${(c.confidence * 100).toFixed(1)}%</td>
+        </tr>
+      `).join('');
+
+      // Heatmaps & Artifacts
+      const artifacts = res.artifacts || {};
+      if (artifacts.noise_residual) document.getElementById('imgNoiseResidual').src = `/artifacts/${analysisId}/noise_residual.png`;
+      if (artifacts.frequency_spectrum) document.getElementById('imgFrequencySpectrum').src = `/artifacts/${analysisId}/frequency_spectrum.png`;
+      if (artifacts.ela) document.getElementById('imgEla').src = `/artifacts/${analysisId}/ela.png`;
+      if (artifacts.noise_heatmap) document.getElementById('imgLocalNoise').src = `/artifacts/${analysisId}/noise_heatmap.png`;
+
+      // Manipulation
+      const manip = res.manipulation || {};
+      const cm = manip.copy_move || {};
+      document.getElementById('cmStatus').innerText = cm.copy_move_detected ? 'DETECTED' : 'NONE DETECTED';
+      document.getElementById('cmStatus').className = cm.copy_move_detected ? 'metric-value badge-danger' : 'metric-value';
+      document.getElementById('cmInliers').innerText = cm.ransac_inliers || 0;
+
+      const splice = manip.splicing || {};
+      document.getElementById('spliceProb').innerText = (splice.tampered_probability ? (splice.tampered_probability * 100).toFixed(1) + '%' : '0%');
+      const recomp = manip.compression ? manip.compression.possible_recompression : false;
+      document.getElementById('recompressionStatus').innerHTML = recomp ? 
+        '<span class="badge badge-warning">POSSIBLE RECOMPRESSION</span>' : 
+        '<span class="badge badge-success">SINGLE COMPRESSION</span>';
+
+      // Metadata Table
+      const meta = res.metadata || {};
+      const fields = meta.metadata_fields || {};
+      const metaTable = document.getElementById('metadataTable');
+      const rows = Object.entries(fields).map(([k, v]) => `
+        <tr>
+          <td><strong>${k}</strong></td>
+          <td>${typeof v === 'object' ? JSON.stringify(v) : v}</td>
+        </tr>
+      `);
+      metaTable.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="2">No EXIF Metadata Found</td></tr>';
+
+      // Robustness
+      const rob = res.robustness || {};
+      const robResults = rob.robustness_results || [];
+      const robTable = document.getElementById('robustnessTable');
+      robTable.innerHTML = robResults.map(r => `
+        <tr>
+          <td>${r.transformation}</td>
+          <td><strong>${r.prediction || 'Unknown'}</strong></td>
+          <td>${(r.confidence * 100).toFixed(1)}%</td>
+          <td>${r.prediction_changed ? '<span class="badge badge-warning">YES</span>' : '<span class="badge badge-success">NO</span>'}</td>
+        </tr>
+      `).join('');
+
+      // Report
+      const rep = res.report || {};
+      const textReport = fetch(`/artifacts/reports/${analysisId}.txt`).then(r => r.text()).then(txt => {
+        document.getElementById('reportText').innerText = txt;
+        document.getElementById('downloadReportBtn').href = `/artifacts/reports/${analysisId}.txt`;
+      }).catch(() => {
+        document.getElementById('reportText').innerText = JSON.stringify(rep, null, 2);
+      });
+    }
+  </script>
+</body>
+</html>
