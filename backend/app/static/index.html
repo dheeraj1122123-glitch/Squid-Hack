@@ -1,947 +1,702 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CameraTrace â€” Digital Image Forensics & Camera Attribution Platform</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-dark: #07090e;
-      --card-bg: rgba(17, 24, 39, 0.7);
-      --card-border: rgba(255, 255, 255, 0.1);
-      --card-hover-border: rgba(0, 242, 254, 0.4);
-      --primary: #00f2fe;
-      --primary-glow: rgba(0, 242, 254, 0.25);
-      --accent: #4facfe;
-      --accent-purple: #7928ca;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --success: #00e676;
-      --warning: #ffab00;
-      --danger: #ff1744;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d1117" />
+    <title>CameraTrace | Explainable Digital Image Forensics &amp; Attribution</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Manrope:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body class="theme-dark">
+    <!-- Ambient Background Lighting -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="grid-overlay"></div>
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    <div class="app-shell">
+      <!-- TOP NAVIGATION BAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <a class="brand" href="#" id="nav-brand">
+            <span class="brand-badge">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </span>
+            <div class="brand-text">
+              <span class="brand-title">CAMERA<strong>TRACE</strong></span>
+              <span class="brand-tag">&lt;/ FORENSIC INTELLIGENCE LAB &gt;</span>
+            </div>
+          </a>
+        </div>
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-dark);
-      background-image: 
-        radial-gradient(circle at 15% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 45%),
-        radial-gradient(circle at 85% 80%, rgba(121, 40, 202, 0.08) 0%, transparent 45%);
-      color: var(--text-main);
-      min-height: 100vh;
-      padding: 24px;
-      line-height: 1.5;
-    }
+        <nav class="nav-links" id="main-nav">
+          <button type="button" class="nav-btn active" data-view="intake">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>INTAKE</span>
+          </button>
+          <button type="button" class="nav-btn" data-view="lab">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>LAB &amp; COMPARE</span>
+          </button>
+          <button type="button" class="nav-btn" data-view="workspace" id="nav-pipeline-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span>PIPELINE</span>
+          </button>
+          <button type="button" class="nav-btn" data-view="artifacts" id="nav-artifacts-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <span>ARTIFACTS</span>
+          </button>
+          <button type="button" class="nav-btn" data-view="final" id="nav-report-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>REPORT</span>
+          </button>
+          <button type="button" class="nav-btn" data-view="cases">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span>CASES</span>
+          </button>
+        </nav>
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 1300px;
-      margin: 0 auto 32px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--card-border);
-    }
+        <div class="topbar-right">
+          <div class="system-status" id="system-status-pill">
+            <span class="status-indicator live"></span>
+            <span id="api-status">Connecting to engine…</span>
+          </div>
+          <button class="icon-btn" id="settings-button" title="Configure API Endpoint" aria-label="Configure API">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+      </header>
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+      <!-- ======================================================== -->
+      <!-- VIEW 1: INTAKE & HERO (HOME)                            -->
+      <!-- ======================================================== -->
+      <section class="view-section hero-section" id="intake-view">
+        <div class="hero-content">
+          <div class="hero-left">
+            <div class="eyebrow-pill">
+              <span class="pulse-dot"></span>
+              <span>SCIENTIFIC DIGITAL IMAGE FORENSICS</span>
+            </div>
+            <h1 class="hero-title">
+              <span>CAMERA</span><strong>TRACE</strong>
+            </h1>
+            <p class="hero-subtitle">
+              Source camera attribution, sensor fingerprint verification (PRNU), and multi-method manipulation localization with explainable forensic consistency.
+            </p>
 
-    .brand-icon {
-      width: 44px;
-      height: 44px;
-      background: linear-gradient(135deg, var(--accent), var(--primary));
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      box-shadow: 0 0 20px var(--primary-glow);
-    }
+            <div class="hero-tags">
+              <span class="tag-pill">● EXIF &amp; SENSOR RESIDUAL</span>
+              <span class="tag-pill">◈ ELA &amp; NOISE ANOMALY</span>
+              <span class="tag-pill">⌁ 2D FFT SPECTRUM</span>
+              <span class="tag-pill">▲ EVIDENCE FUSION</span>
+            </div>
 
-    .brand-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(90deg, #ffffff, var(--primary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+            <!-- Sample Evidence Quick Try -->
+            <div class="sample-evidence-bar">
+              <span class="sample-label">QUICK TEST SAMPLES:</span>
+              <button type="button" class="sample-chip" id="try-sample-desk">
+                <span>Desk Evidence (JPEG)</span>
+              </button>
+              <button type="button" class="sample-chip" id="try-sample-photo">
+                <span>Crime Scene Lens</span>
+              </button>
+              <button type="button" class="sample-chip" id="try-sample-cyber">
+                <span>Cyber Alert Image</span>
+              </button>
+            </div>
+          </div>
 
-    .brand-subtitle {
-      font-size: 13px;
-      color: var(--text-muted);
-      font-weight: 400;
-    }
+          <div class="hero-right">
+            <!-- MAIN DROPZONE -->
+            <div class="intake-card">
+              <label class="evidence-dropzone" id="dropzone" for="file-input">
+                <input id="file-input" type="file" accept=".jpg,.jpeg,.png,.webp,.tif,.tiff,.bmp,image/jpeg,image/png,image/webp,image/tiff,image/bmp" hidden />
+                <div class="drop-orb">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <h3 class="drop-title">Place Evidence on Forensic Stage</h3>
+                <p class="drop-desc">Drag &amp; drop or click to upload forensic image file</p>
+                <div class="drop-formats">
+                  <span>JPG</span><span>PNG</span><span>WEBP</span><span>TIFF</span><span>BMP</span>
+                  <small>· Max 25 MB</small>
+                </div>
+                <div class="drop-action-btn">
+                  <span id="enter-lab-cta">⌁ &nbsp; OPEN INTAKE LAB</span>
+                </div>
+              </label>
 
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(0, 230, 118, 0.1);
-      border: 1px solid rgba(0, 230, 118, 0.3);
-      color: var(--success);
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-    }
+              <!-- PROTOCOL CHEATSHEET -->
+              <div class="protocol-card">
+                <div class="protocol-header">
+                  <span class="protocol-title">FORENSIC PIPELINE PROTOCOL</span>
+                  <span class="protocol-badge">6 STAGES</span>
+                </div>
+                <div class="protocol-list">
+                  <div class="protocol-item">
+                    <span class="protocol-num">01</span>
+                    <div class="protocol-info">
+                      <strong>Cryptographic Ingestion</strong>
+                      <small>SHA-256 hash &amp; perceptual hashing</small>
+                    </div>
+                    <span class="protocol-tag">SECURITY</span>
+                  </div>
+                  <div class="protocol-item">
+                    <span class="protocol-num">02</span>
+                    <div class="protocol-info">
+                      <strong>Camera Attribution</strong>
+                      <small>Noise residual, CFA demosaicing, 2D FFT</small>
+                    </div>
+                    <span class="protocol-tag">PRNU/ML</span>
+                  </div>
+                  <div class="protocol-item">
+                    <span class="protocol-num">03</span>
+                    <div class="protocol-info">
+                      <strong>Manipulation Localization</strong>
+                      <small>Error Level Analysis (ELA), copy-move, splice</small>
+                    </div>
+                    <span class="protocol-tag">INTEGRITY</span>
+                  </div>
+                  <div class="protocol-item">
+                    <span class="protocol-num">04</span>
+                    <div class="protocol-info">
+                      <strong>Evidence Fusion &amp; Stability</strong>
+                      <small>Cross-validation matrix &amp; robustness stress-tests</small>
+                    </div>
+                    <span class="protocol-tag">EXPLAINABLE</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background-color: var(--success);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--success);
-      animation: pulse 2s infinite;
-    }
+      <!-- ======================================================== -->
+      <!-- VIEW 2: LAB & COMPARISON                                -->
+      <!-- ======================================================== -->
+      <section class="view-section hidden" id="lab-view">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">FORENSIC LAB / STEP 01</span>
+            <h2>Select Analysis Mode</h2>
+            <p class="section-desc">Execute the full automated forensic pipeline on single evidence, or perform pixel-aligned comparative tampering localization between original and suspected derivative images.</p>
+          </div>
+          <button class="btn btn-secondary" id="back-to-intake" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            BACK TO HOME
+          </button>
+        </div>
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.2); }
-    }
+        <div class="mode-switcher-bar">
+          <button class="mode-btn active" id="mode-single" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            SINGLE EVIDENCE PIPELINE
+          </button>
+          <button class="mode-btn" id="mode-compare" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="9" height="18" rx="2"/><rect x="13" y="3" width="9" height="18" rx="2"/><line x1="11" y1="12" x2="13" y2="12"/></svg>
+            ORIGINAL VS EDITED COMPARISON
+          </button>
+        </div>
 
-    .container {
-      max-width: 1300px;
-      margin: 0 auto;
-    }
+        <!-- SINGLE PIPELINE PANEL -->
+        <div class="card single-lab-card" id="single-analysis-panel">
+          <div class="single-lab-info">
+            <span class="badge-accent">AUTOMATED INVESTIGATION</span>
+            <h3>Analyze Single Evidence Image</h3>
+            <p>Upload directly to <code>/api/v1/analysis/upload</code> and trigger multi-module forensic examination.</p>
+            <ul class="feature-bullets">
+              <li><span>✓</span> Camera Model Prediction &amp; Sensor Pattern Verification</li>
+              <li><span>✓</span> Error Level Analysis (ELA) &amp; Local Noise Heatmap</li>
+              <li><span>✓</span> 2D Fourier Spectrum Magnitude Distribution</li>
+              <li><span>✓</span> Copy-Move &amp; Patch-Splicing Detection</li>
+              <li><span>✓</span> AI-Generated Image Detection Assessment</li>
+              <li><span>✓</span> EXIF &amp; Metadata Inconsistency Flagging</li>
+            </ul>
+          </div>
 
-    /* Upload Box */
-    .upload-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      border: 2px dashed var(--card-border);
-      border-radius: 20px;
-      padding: 40px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      margin-bottom: 32px;
-      position: relative;
-      overflow: hidden;
-    }
+          <div class="single-upload-box">
+            <label class="upload-dropzone-inner" for="single-file">
+              <input id="single-file" type="file" accept=".jpg,.jpeg,.png,.webp,.tif,.tiff,.bmp,image/jpeg,image/png,image/webp,image/tiff,image/bmp" />
+              <div class="upload-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <strong id="single-file-name">Click or Drag Image Here</strong>
+              <small>JPG, PNG, WEBP, TIFF, BMP · Up to 25 MB</small>
+            </label>
+            <button class="btn btn-primary btn-block btn-lg" id="start-single-analysis" type="button">
+              START FULL FORENSIC ANALYSIS <b>→</b>
+            </button>
+          </div>
+        </div>
 
-    .upload-card:hover, .upload-card.dragover {
-      border-color: var(--primary);
-      box-shadow: 0 0 30px var(--primary-glow);
-      background: rgba(20, 30, 50, 0.85);
-    }
+        <!-- DUAL COMPARE PANEL -->
+        <div class="card compare-lab-card compare-only hidden" id="compare-panel">
+          <div class="compare-upload-grid">
+            <div class="compare-box">
+              <span class="compare-box-tag">ORIGINAL EVIDENCE #01</span>
+              <label class="compare-dropzone" for="original-file">
+                <input id="original-file" type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.tif,.tiff,.bmp" />
+                <div class="compare-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>
+                </div>
+                <strong id="original-name">Choose Original Image</strong>
+                <small>Reference untouched baseline</small>
+              </label>
+            </div>
 
-    .upload-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-      display: inline-block;
-      transition: transform 0.3s ease;
-    }
+            <div class="compare-box">
+              <span class="compare-box-tag">EDITED / SUSPECT DERIVATIVE #02</span>
+              <label class="compare-dropzone" for="edited-file">
+                <input id="edited-file" type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.tif,.tiff,.bmp" />
+                <div class="compare-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </div>
+                <strong id="edited-name">Choose Edited Derivative</strong>
+                <small>Suspected manipulated version</small>
+              </label>
+            </div>
+          </div>
 
-    .upload-card:hover .upload-icon {
-      transform: translateY(-4px);
-    }
+          <div class="compare-action-row">
+            <button class="btn btn-primary btn-lg" id="compare-images" type="button">
+              COMPARE EVIDENCE VIA EUCLIDEAN ALIGNMENT <b>→</b>
+            </button>
+          </div>
 
-    .upload-text {
-      font-family: 'Outfit', sans-serif;
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
+          <!-- COMPARISON RESULTS -->
+          <div class="compare-results-wrapper hidden" id="compare-results">
+            <div class="results-banner">
+              <div class="results-banner-left">
+                <span class="badge-success" id="compare-status-badge">COMPARISON COMPLETE</span>
+                <h3 id="compare-result-line">Significant differences localized</h3>
+              </div>
+              <div class="results-banner-right">
+                <span id="compare-id-tag">ID: —</span>
+              </div>
+            </div>
 
-    .upload-subtext {
-      font-size: 14px;
-      color: var(--text-muted);
-    }
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <span class="metric-label">CHANGED AREA</span>
+                <strong class="metric-val text-accent" id="metric-area">0.0%</strong>
+                <small>Pixel area modified</small>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">ALIGNMENT SCORE</span>
+                <strong class="metric-val text-info" id="metric-align">100.0%</strong>
+                <small>Euclidean ECC match</small>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">CLASSIFIED MODIFICATION</span>
+                <div class="metric-chip" id="metric-mods">—</div>
+                <small>Detected change pattern</small>
+              </div>
+            </div>
 
-    #fileInput {
-      display: none;
-    }
+            <div class="compare-visuals-grid">
+              <div class="visual-figure">
+                <div class="visual-header">
+                  <span>DIFFERENCE HEATMAP</span>
+                  <button type="button" class="btn-micro zoom-btn" data-target="compare-diff-img">ZOOM</button>
+                </div>
+                <div class="visual-canvas-wrap" id="heatmap-frame">
+                  <img id="compare-diff-img" alt="Difference Heatmap" />
+                </div>
+                <p class="visual-caption">Heatmap showing intensity of pixel value changes after ECC alignment.</p>
+              </div>
 
-    .compare-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 32px;
-    }
-    .compare-input { width: 100%; color: var(--text-muted); margin-top: 8px; }
-    .primary-button {
-      margin-top: 18px; padding: 10px 18px; border: 0; border-radius: 9px;
-      background: linear-gradient(135deg, var(--accent), var(--primary)); color: #061019;
-      font-weight: 700; cursor: pointer;
-    }
-    .comparison-images { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
-    .comparison-images img { width: 100%; max-height: 280px; object-fit: contain; background: #000; border-radius: 10px; }
+              <div class="visual-figure">
+                <div class="visual-header">
+                  <span>CHANGED-AREA OVERLAY</span>
+                  <button type="button" class="btn-micro zoom-btn" data-target="edited-preview">ZOOM</button>
+                </div>
+                <div class="visual-canvas-wrap">
+                  <img id="edited-preview" alt="Changed-Area Overlay" />
+                </div>
+                <p class="visual-caption">Original evidence overlaid with red bounding masks on detected regions.</p>
+              </div>
+            </div>
 
-    /* Processing Bar */
-    .progress-card {
-      display: none;
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 32px;
-    }
+            <div class="compare-regions-box">
+              <h4>DETECTED MODIFIED REGIONS</h4>
+              <div class="regions-table-wrap" id="compare-regions-list"></div>
+            </div>
 
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
+            <p class="disclaimer-note" id="compare-limits"></p>
+          </div>
+        </div>
+      </section>
 
-    .progress-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--primary);
-    }
+      <!-- ======================================================== -->
+      <!-- VIEW 3: PIPELINE WORKSPACE (LIVE EXECUTION)             -->
+      <!-- ======================================================== -->
+      <section class="view-section hidden" id="workspace">
+        <div class="section-heading">
+          <div>
+            <div class="case-id-badge">
+              <span>ANALYSIS ID:</span>
+              <strong id="case-id">—</strong>
+              <button class="copy-tiny-btn" id="copy-case-id" title="Copy ID">📋</button>
+            </div>
+            <h2 id="case-title">Evidence Under Review</h2>
+          </div>
+          <div class="heading-actions">
+            <button class="btn btn-secondary" id="new-case" type="button">+ NEW EVIDENCE</button>
+            <button class="btn btn-primary" id="open-full-report" type="button">VIEW FULL REPORT <b>→</b></button>
+          </div>
+        </div>
 
-    .progress-percent {
-      font-weight: 700;
-      color: #fff;
-    }
+        <!-- PROGRESS BAR -->
+        <div class="progress-container" id="progress-shell">
+          <div class="progress-meta">
+            <div class="progress-stage-info">
+              <span class="spinner-small" id="progress-spinner"></span>
+              <span class="stage-name" id="stage-label">Initializing pipeline</span>
+            </div>
+            <span class="progress-pct" id="progress-value">0%</span>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progress-bar"></div>
+          </div>
+        </div>
 
-    .progress-bar-bg {
-      width: 100%;
-      height: 10px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 5px;
-      overflow: hidden;
-    }
+        <!-- DASHBOARD GRID -->
+        <div class="dashboard-layout">
+          <!-- MAIN EVIDENCE CANVAS & MULTI-LAYER VIEWER -->
+          <div class="card dashboard-main-card">
+            <div class="card-head">
+              <div class="card-head-left">
+                <span class="card-title">FORENSIC EVIDENCE VIEWER</span>
+                <span class="card-subtitle" id="image-format-badge">ORIGINAL</span>
+              </div>
+              <!-- INTERACTIVE LAYER SELECTOR -->
+              <div class="layer-selector" id="layer-selector">
+                <button type="button" class="layer-btn active" data-layer="original">ORIGINAL</button>
+                <button type="button" class="layer-btn" data-layer="suspiciousness">HEATMAP</button>
+                <button type="button" class="layer-btn" data-layer="noise">NOISE RESIDUAL</button>
+                <button type="button" class="layer-btn" data-layer="frequency">FFT SPECTRUM</button>
+                <button type="button" class="layer-btn" data-layer="ela">ELA</button>
+                <button type="button" class="layer-btn" data-layer="noise_anomaly">NOISE ANOMALY</button>
+              </div>
+            </div>
 
-    .progress-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--accent), var(--primary));
-      border-radius: 5px;
-      transition: width 0.4s ease;
-      box-shadow: 0 0 12px var(--primary);
-    }
+            <!-- IMAGE CANVAS WITH BOUNDING BOX OVERLAYS -->
+            <div class="canvas-viewport" id="canvas-viewport">
+              <div class="image-stage-wrap" id="image-stage-wrap">
+                <img id="preview-image" alt="Evidence Stage" />
+                <img id="layer-overlay-image" class="layer-overlay-img hidden" alt="Overlay Layer" />
+                <div class="regions-overlay-layer" id="regions-overlay-layer"></div>
+                <div class="reticle-hud"></div>
+              </div>
+            </div>
 
-    /* Tabs Layout */
-    .tabs-nav {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 12px;
-      overflow-x: auto;
-    }
+            <!-- OPACITY & CONTROLS TOOLBAR -->
+            <div class="canvas-toolbar">
+              <div class="toolbar-left">
+                <label class="blend-slider-label">
+                  <span>LAYER OPACITY:</span>
+                  <input type="range" id="layer-opacity-slider" min="0" max="100" value="85" />
+                  <span id="opacity-val">85%</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="toggle-regions-check" checked />
+                  <span>Highlight Suspicious Regions</span>
+                </label>
+              </div>
+              <div class="toolbar-right">
+                <span class="meta-inline" id="image-meta">Awaiting intake…</span>
+                <button type="button" class="btn-micro" id="zoom-main-image-btn">FULLSCREEN ZOOM</button>
+              </div>
+            </div>
+          </div>
 
-    .tab-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 600;
-      padding: 10px 18px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
+          <!-- SIDE PANELS -->
+          <div class="dashboard-side-col">
+            <!-- VERDICT CARD -->
+            <div class="card verdict-card">
+              <div class="card-head">
+                <span class="card-title">FORENSIC VERDICT</span>
+                <span class="live-pulse">LIVE</span>
+              </div>
+              <div class="verdict-body">
+                <div class="verdict-orb-wrapper">
+                  <div class="verdict-gauge-ring" id="verdict-gauge-ring">
+                    <span class="gauge-value" id="verdict-gauge-value">—</span>
+                  </div>
+                </div>
+                <div class="verdict-details">
+                  <h3 id="verdict-title">Evaluating Evidence</h3>
+                  <p id="verdict-desc">The consistency engine is fusing independent signals from metadata, camera models, and manipulation detectors.</p>
+                </div>
+              </div>
+            </div>
 
-    .tab-btn:hover {
-      color: var(--text-main);
-      background: rgba(255, 255, 255, 0.05);
-    }
+            <!-- CAMERA ATTRIBUTION CARD -->
+            <div class="card camera-card">
+              <div class="card-head">
+                <span class="card-title">CAMERA ATTRIBUTION</span>
+                <span class="card-badge" id="camera-source-badge">MODEL SIGNALS</span>
+              </div>
+              <div class="card-body" id="camera-content">
+                <div class="empty-state-spinner">Awaiting camera forensics…</div>
+              </div>
+            </div>
 
-    .tab-btn.active {
-      color: #fff;
-      background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.2));
-      border: 1px solid var(--primary);
-      box-shadow: 0 0 15px var(--primary-glow);
-    }
+            <!-- INTEGRITY & TAMPERING CARD -->
+            <div class="card integrity-card">
+              <div class="card-head">
+                <span class="card-title">INTEGRITY SURFACE</span>
+                <span class="card-badge-red" id="integrity-score">—</span>
+              </div>
+              <div class="card-body" id="integrity-content">
+                <div class="empty-state-spinner">Scanning for manipulation markers…</div>
+              </div>
+            </div>
 
-    .tab-content {
-      display: none;
-    }
+            <!-- EVIDENCE LEDGER -->
+            <div class="card evidence-ledger-card">
+              <div class="card-head">
+                <span class="card-title">EVIDENCE LEDGER</span>
+                <span class="card-badge">VERIFIED</span>
+              </div>
+              <div class="card-body" id="evidence-content">
+                <div class="empty-state-spinner">Building cryptographic record…</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    .tab-content.active {
-      display: block;
-    }
+        <!-- EXPLAINABLE SUMMARY STRIP -->
+        <div class="card summary-strip-card">
+          <div class="card-head">
+            <span class="card-title">EXPLAINABLE SUMMARY FINDINGS</span>
+            <button class="btn btn-secondary btn-sm" id="copy-report" type="button">
+              📋 COPY SUMMARY
+            </button>
+          </div>
+          <pre class="summary-text-box" id="report-content">A human-readable forensic summary will appear here once analysis is complete.</pre>
+        </div>
+      </section>
 
-    /* Dashboard Cards Grid */
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
+      <!-- ======================================================== -->
+      <!-- VIEW 4: ARTIFACTS GALLERY & MAPS                        -->
+      <!-- ======================================================== -->
+      <section class="view-section hidden" id="artifacts-view">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">FORENSIC SIGNAL MAPS</span>
+            <h2>Artifacts &amp; Visual Evidence</h2>
+            <p class="section-desc">Every visual artifact generated by the backend engines during analysis. Inspect noise residuals, 2D FFT spectral frequency, ELA compression variances, and fused localization heatmaps.</p>
+          </div>
+          <div class="heading-actions">
+            <span class="badge-count" id="artifacts-badge-count">0 ARTIFACTS</span>
+            <button class="btn btn-secondary" id="download-all-artifacts-btn" type="button">
+              💾 DOWNLOAD ARTIFACTS
+            </button>
+          </div>
+        </div>
 
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-    }
+        <!-- ARTIFACTS SHOWCASE GRID -->
+        <div class="artifacts-showcase-grid" id="artifacts-showcase-grid">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </section>
 
-    .card {
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px;
-      transition: border-color 0.3s ease;
-    }
+      <!-- ======================================================== -->
+      <!-- VIEW 5: FULL REPORT DOSSIER (TABBED)                     -->
+      <!-- ======================================================== -->
+      <section class="view-section hidden" id="final-analysis">
+        <div class="section-heading">
+          <div>
+            <div class="case-id-badge">
+              <span>FORENSIC DOSSIER:</span>
+              <strong id="final-id">—</strong>
+            </div>
+            <h2>Evidence Intelligence Report</h2>
+          </div>
+          <div class="heading-actions">
+            <button class="btn btn-secondary" id="final-new-case" type="button">+ NEW CASE</button>
+            <button class="btn btn-secondary" id="download-report-txt-btn" type="button">📄 EXPORT .TXT</button>
+            <button class="btn btn-primary" id="download-report-json-btn" type="button">💾 EXPORT .JSON</button>
+          </div>
+        </div>
 
-    .card:hover {
-      border-color: var(--card-hover-border);
-    }
+        <!-- REPORT TABS -->
+        <nav class="report-tabs-bar" id="analysis-tabs">
+          <button type="button" class="report-tab-btn active" data-tab="overview">OVERVIEW</button>
+          <button type="button" class="report-tab-btn" data-tab="camera">CAMERA ATTRIBUTION</button>
+          <button type="button" class="report-tab-btn" data-tab="manipulation">MANIPULATION &amp; MAPS</button>
+          <button type="button" class="report-tab-btn" data-tab="metadata">METADATA / EXIF</button>
+          <button type="button" class="report-tab-btn" data-tab="robustness">ROBUSTNESS</button>
+          <button type="button" class="report-tab-btn" data-tab="consistency">CONSISTENCY &amp; FUSION</button>
+          <button type="button" class="report-tab-btn" data-tab="report">HUMAN REPORT</button>
+        </nav>
 
-    .card-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+        <!-- TAB PANELS -->
+        <div class="tab-panel active" data-panel="overview">
+          <div class="overview-cards-row" id="overview-summary"></div>
+          <div class="overview-flags-row" id="overview-flags"></div>
 
-    .metric-box {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
+          <!-- ARTIFACTS PREVIEW INSIDE OVERVIEW -->
+          <div class="card dossier-artifacts-card">
+            <div class="card-head">
+              <span class="card-title">GENERATED FORENSIC ARTIFACT MAPS</span>
+              <span class="card-badge" id="artifact-count">0 SIGNALS</span>
+            </div>
+            <div class="artifact-mini-grid" id="artifact-grid"></div>
+          </div>
+        </div>
 
-    .metric-label {
-      font-size: 12px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+        <div class="tab-panel hidden" data-panel="camera">
+          <div id="tab-camera" class="tab-content-body"></div>
+        </div>
 
-    .metric-value {
-      font-size: 24px;
-      font-weight: 700;
-      margin-top: 4px;
-    }
+        <div class="tab-panel hidden" data-panel="manipulation">
+          <div id="tab-manipulation" class="tab-content-body"></div>
+        </div>
 
-    /* Badges */
-    .badge {
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .badge-success { background: rgba(0, 230, 118, 0.2); color: var(--success); border: 1px solid var(--success); }
-    .badge-warning { background: rgba(255, 171, 0, 0.2); color: var(--warning); border: 1px solid var(--warning); }
-    .badge-danger { background: rgba(255, 23, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
-    .badge-info { background: rgba(0, 242, 254, 0.2); color: var(--primary); border: 1px solid var(--primary); }
+        <div class="tab-panel hidden" data-panel="metadata">
+          <div id="tab-metadata" class="tab-content-body"></div>
+        </div>
 
-    /* Heatmaps Grid */
-    .heatmap-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
+        <div class="tab-panel hidden" data-panel="robustness">
+          <div id="tab-robustness" class="tab-content-body"></div>
+        </div>
 
-    .heatmap-card {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      overflow: hidden;
-      text-align: center;
-    }
+        <div class="tab-panel hidden" data-panel="consistency">
+          <div id="tab-consistency" class="tab-content-body"></div>
+        </div>
 
-    .heatmap-img {
-      width: 100%;
-      height: 200px;
-      object-fit: contain;
-      background: #000;
-    }
+        <div class="tab-panel hidden" data-panel="report">
+          <div class="card dossier-raw-report-card">
+            <div class="card-head">
+              <span class="card-title">HUMAN READABLE FORENSIC SUMMARY</span>
+              <button class="btn btn-secondary btn-sm" id="copy-tab-report" type="button">📋 COPY REPORT</button>
+            </div>
+            <pre class="report-pre-block" id="tab-report"></pre>
+          </div>
+        </div>
+      </section>
 
-    .heatmap-label {
-      padding: 12px;
-      font-size: 13px;
-      font-weight: 600;
-    }
+      <!-- ======================================================== -->
+      <!-- VIEW 6: CASES & KNOWLEDGE                               -->
+      <!-- ======================================================== -->
+      <section class="view-section hidden" id="cases-view">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">CASE LEDGER / <code>/api/v1/cases</code></span>
+            <h2>Forensic Cases &amp; Database</h2>
+            <p class="section-desc">Manage investigations, open previous analysis dossiers by ID, and query the indexed camera embedding similarity registry.</p>
+          </div>
+          <button class="btn btn-secondary" id="cases-back" type="button">← BACK TO HOME</button>
+        </div>
 
-    /* Tables */
-    .table-container {
-      overflow-x: auto;
-    }
+        <div class="cases-layout-grid">
+          <div class="cases-left-col">
+            <!-- CREATE CASE -->
+            <div class="card">
+              <div class="card-head">
+                <span class="card-title">CREATE NEW FORENSIC CASE</span>
+              </div>
+              <form class="case-create-form" id="case-form">
+                <div class="form-group">
+                  <label for="case-title-input">Case Title / Reference Name</label>
+                  <input id="case-title-input" name="title" placeholder="e.g., Investigation CASE-2026-X01" required />
+                </div>
+                <div class="form-group">
+                  <label for="case-desc-input">Description / Agency Notes</label>
+                  <textarea id="case-desc-input" name="description" rows="3" placeholder="Case notes, incident description, chain of custody context..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">CREATE CASE</button>
+              </form>
+            </div>
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
+            <!-- REOPEN BY ID -->
+            <div class="card">
+              <div class="card-head">
+                <span class="card-title">RELOAD ANALYSIS BY ID</span>
+              </div>
+              <div class="lookup-input-group">
+                <input id="lookup-id" placeholder="Paste 32-character analysis_id" />
+                <button type="button" class="btn btn-secondary" id="lookup-open">LOAD DOSSIER</button>
+              </div>
+              <small class="form-hint">Fetches all previously computed artifacts, camera predictions, and manipulation maps.</small>
+            </div>
 
-    th, td {
-      padding: 12px 16px;
-      text-align: left;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
+            <!-- CAMERA DATABASE SEARCH -->
+            <div class="card">
+              <div class="card-head">
+                <span class="card-title">CAMERA SIMILARITY REGISTRY SEARCH</span>
+              </div>
+              <div class="lookup-input-group">
+                <input id="camera-query" placeholder="Search camera models (e.g. Nikon, Canon, Agfa)" />
+                <button type="button" class="btn btn-secondary" id="camera-search-btn">SEARCH</button>
+              </div>
+              <pre class="camera-search-results-box" id="camera-search-out">Search indexed camera models or view device fingerprints.</pre>
+            </div>
+          </div>
 
-    th {
-      color: var(--text-muted);
-      font-weight: 600;
-      font-size: 12px;
-      text-transform: uppercase;
-    }
+          <div class="cases-right-col">
+            <div class="card">
+              <div class="card-head">
+                <span class="card-title">STORED FORENSIC CASES</span>
+                <button class="btn-micro" id="refresh-cases-btn">REFRESH</button>
+              </div>
+              <div class="case-list-container" id="case-list">
+                <div class="empty-state-text">Loading stored cases…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
 
-    tr:hover td {
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .report-output {
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 20px;
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 13px;
-      white-space: pre-wrap;
-      max-height: 500px;
-      overflow-y: auto;
-      color: #38bdf8;
-    }
-
-    .btn {
-      background: linear-gradient(135deg, var(--accent), var(--primary));
-      border: none;
-      color: #000;
-      font-weight: 700;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-    }
-
-    .btn:hover {
-      box-shadow: 0 0 20px var(--primary-glow);
-      transform: translateY(-1px);
-    }
-
-    @media (max-width: 900px) {
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="header">
-    <div class="brand">
-      <div class="brand-icon">ðŸ“·</div>
-      <div>
-        <div class="brand-title">CameraTrace</div>
-        <div class="brand-subtitle">Explainable Digital Image Forensics & Source Camera Attribution</div>
+    <!-- ======================================================== -->
+    <!-- LIGHTBOX / ZOOM MODAL FOR ALL ARTIFACTS                 -->
+    <!-- ======================================================== -->
+    <div class="lightbox-modal hidden" id="artifact-lightbox">
+      <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+      <div class="lightbox-container">
+        <div class="lightbox-header">
+          <div class="lightbox-info">
+            <h3 id="lightbox-title">Artifact Inspection</h3>
+            <span id="lightbox-subtitle">Artifact details</span>
+          </div>
+          <div class="lightbox-actions">
+            <a id="lightbox-download" class="btn btn-secondary btn-sm" download="artifact.png" target="_blank">💾 SAVE PNG</a>
+            <button class="btn btn-secondary btn-sm" id="lightbox-close" type="button">✕ CLOSE</button>
+          </div>
+        </div>
+        <div class="lightbox-body">
+          <img id="lightbox-img" alt="Artifact Deep View" />
+        </div>
       </div>
     </div>
-    <div class="status-badge">
-      <div class="status-dot"></div>
-      Engine Active (v1.0)
-    </div>
-  </div>
 
-  <div class="container">
-    
-    <!-- Upload Dropzone -->
-    <div class="upload-card" id="dropzone">
-      <div class="upload-icon">ðŸ”</div>
-      <div class="upload-text">Drag & Drop Image Evidence Here</div>
-      <div class="upload-subtext">Supports JPEG, PNG, TIFF, WebP, BMP (Max 25MB)</div>
-      <input type="file" id="fileInput" accept="image/*">
-    </div>
-
-    <div class="compare-card">
-      <div class="card-title">Compare Original and Edited Image</div>
-      <div class="upload-subtext">Upload the original first, then its edited version. The tool highlights visual changes and likely modification types.</div>
-      <div class="grid-2" style="margin-top: 16px;">
-        <div><label class="metric-label" for="originalCompareInput">Original image</label><input class="compare-input" type="file" id="originalCompareInput" accept="image/*"></div>
-        <div><label class="metric-label" for="editedCompareInput">Edited image</label><input class="compare-input" type="file" id="editedCompareInput" accept="image/*"></div>
-      </div>
-      <button class="primary-button" id="compareButton" type="button">Compare Images</button>
-      <div id="comparisonStatus" class="upload-subtext" style="margin-top: 12px;"></div>
-      <div id="comparisonResult" style="display: none; margin-top: 18px;">
-        <div class="grid-3">
-          <div class="metric-box"><div class="metric-label">Changed area</div><div class="metric-value" id="compareChangedArea">-</div></div>
-          <div class="metric-box"><div class="metric-label">Alignment score</div><div class="metric-value" id="compareAlignment">-</div></div>
-          <div class="metric-box"><div class="metric-label">Detected modifications</div><div id="compareModifications" style="margin-top: 8px;"></div></div>
+    <!-- SETTINGS DIALOG -->
+    <dialog id="settings-dialog" class="forensic-dialog">
+      <form method="dialog" class="dialog-content">
+        <div class="dialog-header">
+          <span class="badge-accent">CONFIGURATION</span>
+          <h3>Forensic Engine Connection</h3>
         </div>
-        <div class="comparison-images"><div><div class="heatmap-label">Difference heatmap</div><img id="compareHeatmap" alt="Difference heatmap"></div><div><div class="heatmap-label">Changed-area overlay</div><img id="compareOverlay" alt="Changed-area overlay"></div></div>
-      </div>
-    </div>
-
-    <!-- Real-time Execution Bar -->
-    <div class="progress-card" id="progressCard">
-      <div class="progress-header">
-        <div class="progress-title" id="stageText">Initializing Forensic Pipeline...</div>
-        <div class="progress-percent" id="percentText">0%</div>
-      </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progressBar"></div>
-      </div>
-    </div>
-
-    <!-- Main Results Dashboard (Hidden until analysis completes) -->
-    <div id="resultsDashboard" style="display: none;">
-
-      <!-- Tabs Navigation -->
-      <div class="tabs-nav">
-        <button class="tab-btn active" onclick="switchTab('overview')">ðŸ“Š Overview & Consistency</button>
-        <button class="tab-btn" onclick="switchTab('camera')">ðŸ“· Camera Attribution</button>
-        <button class="tab-btn" onclick="switchTab('manipulation')">ðŸ” Manipulation & Heatmaps</button>
-        <button class="tab-btn" onclick="switchTab('metadata')">ðŸ“„ Metadata / EXIF</button>
-        <button class="tab-btn" onclick="switchTab('robustness')">ðŸ›¡ï¸ Robustness Matrix</button>
-        <button class="tab-btn" onclick="switchTab('report')">ðŸ“‹ Forensic Report</button>
-      </div>
-
-      <!-- Tab 1: Overview -->
-      <div class="tab-content active" id="tab-overview">
-        <div class="grid-3">
-          <div class="card">
-            <div class="card-title">Consistency Assessment</div>
-            <div class="metric-box" style="text-align: center;">
-              <span class="badge" id="assessmentBadge">PENDING</span>
-              <div class="metric-value" id="assessmentText" style="font-size: 18px; margin-top: 10px;">-</div>
-            </div>
-            <div class="metric-label" style="margin-top: 12px;">Active Consistency Flags</div>
-            <div id="flagsContainer" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;"></div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Evidence Hash & Metadata</div>
-            <div class="metric-box">
-              <div class="metric-label">Filename</div>
-              <div id="infoFilename" style="font-size: 14px; font-weight: 600; word-break: break-all;">-</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-label">SHA-256 Checksum</div>
-              <div id="infoHash" style="font-size: 11px; font-family: monospace; color: var(--primary); word-break: break-all;">-</div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Source Attribution Summary</div>
-            <div class="metric-box">
-              <div class="metric-label">Predicted Camera</div>
-              <div class="metric-value" id="infoCamModel" style="color: var(--primary);">-</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-label">Model Confidence</div>
-              <div class="metric-value" id="infoCamConf">-</div>
-            </div>
-          </div>
+        <p class="dialog-hint">Configure the API endpoint URL for CameraTrace. When served locally, <code>/api/v1</code> connects directly to the FastAPI server.</p>
+        <div class="form-group">
+          <label for="api-url">API Base URL</label>
+          <input id="api-url" type="text" />
         </div>
-      </div>
-
-      <!-- Tab 2: Camera Attribution -->
-      <div class="tab-content" id="tab-camera">
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-title">Source Attribution Predictions</div>
-            <div class="metric-box">
-              <div class="metric-label">Manufacturer</div>
-              <div class="metric-value" id="camManufacturer">-</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-label">Camera Model</div>
-              <div class="metric-value" id="camModelFull" style="color: var(--primary);">-</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-label">Open-Set Rejection Status</div>
-              <div id="camKnownStatus" style="font-weight: 600; margin-top: 4px;">-</div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Top Candidate Camera Models</div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Camera Model</th>
-                    <th>Confidence</th>
-                  </tr>
-                </thead>
-                <tbody id="topCandidatesTable"></tbody>
-              </table>
-            </div>
-          </div>
+        <div class="dialog-btn-row">
+          <button class="btn btn-secondary" value="cancel">CANCEL</button>
+          <button class="btn btn-primary" id="save-settings" value="default">SAVE CONFIG</button>
         </div>
-      </div>
+      </form>
+    </dialog>
 
-      <!-- Tab 3: Manipulation & Heatmaps -->
-      <div class="tab-content" id="tab-manipulation">
-        <div class="card" style="margin-bottom: 24px;">
-          <div class="card-title">Forensic Signal Artifact Maps</div>
-          <div class="heatmap-grid" id="heatmapGrid">
-            <div class="heatmap-card">
-              <img id="imgNoiseResidual" class="heatmap-img" src="" alt="Noise Residual">
-              <div class="heatmap-label">Noise Residual Map (Gaussian Filter)</div>
-            </div>
-            <div class="heatmap-card">
-              <img id="imgFrequencySpectrum" class="heatmap-img" src="" alt="Frequency Spectrum">
-              <div class="heatmap-label">2D FFT Spectral Magnitude</div>
-            </div>
-            <div class="heatmap-card">
-              <img id="imgEla" class="heatmap-img" src="" alt="ELA Map">
-              <div class="heatmap-label">Error Level Analysis (ELA)</div>
-            </div>
-            <div class="heatmap-card">
-              <img id="imgLocalNoise" class="heatmap-img" src="" alt="Local Noise Heatmap">
-              <div class="heatmap-label">Local Noise Anomaly Map</div>
-            </div>
-          </div>
-        </div>
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast-popup"></div>
 
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-title">Copy-Move Forgery Verification</div>
-            <div class="metric-box">
-              <div class="metric-label">Copy-Move Detected</div>
-              <div id="cmStatus" class="metric-value">-</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-label">RANSAC Homography Inliers</div>
-              <div id="cmInliers" class="metric-value">-</div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Splicing & Patch Anomaly Analysis</div>
-            <div class="metric-box">
-              <div class="metric-label">Splicing Probability</div>
-              <div id="spliceProb" class="metric-value">-</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-label">Recompression Indicator</div>
-              <div id="recompressionStatus" style="font-weight: 600; margin-top: 4px;">-</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab 4: Metadata -->
-      <div class="tab-content" id="tab-metadata">
-        <div class="card">
-          <div class="card-title">Extracted EXIF Header Metadata</div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Field Tag</th>
-                  <th>Extracted Value</th>
-                </tr>
-              </thead>
-              <tbody id="metadataTable"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab 5: Robustness -->
-      <div class="tab-content" id="tab-robustness">
-        <div class="card">
-          <div class="card-title">Transformation Stability Test Matrix</div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Transformation</th>
-                  <th>Predicted Camera</th>
-                  <th>Confidence</th>
-                  <th>Prediction Changed</th>
-                </tr>
-              </thead>
-              <tbody id="robustnessTable"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab 6: Forensic Report -->
-      <div class="tab-content" id="tab-report">
-        <div class="card">
-          <div class="card-title">
-            <span>Machine-Readable & Human Forensic Report</span>
-            <a id="downloadReportBtn" class="btn" download="report.txt">â¬‡ï¸ Download Report</a>
-          </div>
-          <div class="report-output" id="reportText">Loading report...</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <script>
-    const dropzone = document.getElementById('dropzone');
-    const fileInput = document.getElementById('fileInput');
-    const progressCard = document.getElementById('progressCard');
-    const progressBar = document.getElementById('progressBar');
-    const stageText = document.getElementById('stageText');
-    const percentText = document.getElementById('percentText');
-    const resultsDashboard = document.getElementById('resultsDashboard');
-    const originalCompareInput = document.getElementById('originalCompareInput');
-    const editedCompareInput = document.getElementById('editedCompareInput');
-    const compareButton = document.getElementById('compareButton');
-
-    dropzone.addEventListener('click', () => fileInput.click());
-    dropzone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropzone.classList.add('dragover');
-    });
-    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-    dropzone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropzone.classList.remove('dragover');
-      if (e.dataTransfer.files.length) {
-        handleUpload(e.dataTransfer.files[0]);
-      }
-    });
-
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length) {
-        handleUpload(e.target.files[0]);
-      }
-    });
-
-    compareButton.addEventListener('click', async () => {
-      const original = originalCompareInput.files[0];
-      const edited = editedCompareInput.files[0];
-      const status = document.getElementById('comparisonStatus');
-      if (!original || !edited) {
-        status.innerText = 'Please choose both the original and edited image.';
-        return;
-      }
-      const formData = new FormData();
-      formData.append('original', original);
-      formData.append('edited', edited);
-      compareButton.disabled = true;
-      status.innerText = 'Aligning images and detecting visual changes…';
-      document.getElementById('comparisonResult').style.display = 'none';
-      try {
-        const response = await fetch('/api/v1/compare', { method: 'POST', body: formData });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.detail || 'Comparison failed');
-        document.getElementById('compareChangedArea').innerText = `${result.changed_area_percent}%`;
-        document.getElementById('compareAlignment').innerText = `${(result.alignment_score * 100).toFixed(1)}%`;
-        document.getElementById('compareModifications').innerHTML = result.modifications
-          .map(item => `<span class="badge badge-warning">${item.replaceAll('_', ' ')}</span>`).join(' ');
-        document.getElementById('compareHeatmap').src = result.artifacts.difference_heatmap;
-        document.getElementById('compareOverlay').src = result.artifacts.change_overlay;
-        document.getElementById('comparisonResult').style.display = 'block';
-        status.innerText = result.changed_regions.length
-          ? `${result.changed_regions.length} significant changed region(s) located.`
-          : 'No significant localized region found.';
-      } catch (error) {
-        status.innerText = `Comparison failed: ${error.message}`;
-      } finally {
-        compareButton.disabled = false;
-      }
-    });
-
-    async function handleUpload(file) {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      progressCard.style.display = 'block';
-      resultsDashboard.style.display = 'none';
-      updateProgress('Uploading Image Evidence...', 5);
-
-      try {
-        const uploadRes = await fetch('/api/v1/analysis/upload', {
-          method: 'POST',
-          body: formData
-        });
-        const uploadData = await uploadRes.json();
-
-        if (!uploadRes.ok) {
-          alert('Upload failed: ' + (uploadData.detail || 'Invalid image'));
-          progressCard.style.display = 'none';
-          return;
-        }
-
-        const analysisId = uploadData.analysis_id;
-        updateProgress('Submitting to Pipeline...', 10);
-
-        const runRes = await fetch(`/api/v1/analysis/${analysisId}/run`, { method: 'POST' });
-        if (!runRes.ok) {
-          alert('Failed to start analysis pipeline');
-          progressCard.style.display = 'none';
-          return;
-        }
-
-        // Poll status every 500ms
-        const pollInterval = setInterval(async () => {
-          try {
-            const statusRes = await fetch(`/api/v1/analysis/${analysisId}/status`);
-            const statusData = await statusRes.json();
-            
-            const stage = statusData.status || 'QUEUED';
-            const progress = Math.min(100, Math.max(10, Math.round(statusData.progress || 0)));
-            updateProgress(`Processing: ${stage.replace('_', ' ')}`, progress);
-
-            if (stage === 'COMPLETED') {
-              clearInterval(pollInterval);
-              const resultRes = await fetch(`/api/v1/analysis/${analysisId}`);
-              const resultData = await resultRes.json();
-              updateProgress('Complete!', 100);
-              setTimeout(() => {
-                progressCard.style.display = 'none';
-                renderDashboard(analysisId, resultData.result);
-              }, 400);
-            } else if (stage === 'FAILED') {
-              clearInterval(pollInterval);
-              alert('Analysis failed: ' + (statusData.error || 'Unknown processing error'));
-              progressCard.style.display = 'none';
-            }
-          } catch (err) {
-            console.error('Polling error:', err);
-          }
-        }, 500);
-
-      } catch (err) {
-        console.error(err);
-        alert('Error communicating with backend: ' + err.message);
-        progressCard.style.display = 'none';
-      }
-    }
-
-    function updateProgress(stage, percent) {
-      stageText.innerText = stage;
-      percentText.innerText = percent + '%';
-      progressBar.style.width = percent + '%';
-    }
-
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
-      event.target.classList.add('active');
-      document.getElementById('tab-' + tabId).classList.add('active');
-    }
-
-    function renderDashboard(analysisId, res) {
-      resultsDashboard.style.display = 'block';
-
-      // 1. Overview
-      const ev = res.evidence || {};
-      document.getElementById('infoFilename').innerText = ev.filename || '-';
-      document.getElementById('infoHash').innerText = ev.sha256 || '-';
-
-      const cons = res.consistency || {};
-      const assessment = cons.overall_assessment || 'Inconclusive';
-      document.getElementById('assessmentText').innerText = assessment.toUpperCase();
-
-      const badge = document.getElementById('assessmentBadge');
-      if (assessment.includes('consistent')) {
-        badge.className = 'badge badge-success';
-        badge.innerText = 'CONSISTENT';
-      } else if (assessment.includes('suspicious')) {
-        badge.className = 'badge badge-warning';
-        badge.innerText = 'SUSPICIOUS';
-      } else if (assessment.includes('manipulated')) {
-        badge.className = 'badge badge-danger';
-        badge.innerText = 'MANIPULATED';
-      } else {
-        badge.className = 'badge badge-info';
-        badge.innerText = 'INCONCLUSIVE';
-      }
-
-      const flags = cons.consistency_flags || [];
-      const flagsContainer = document.getElementById('flagsContainer');
-      flagsContainer.innerHTML = flags.length ? flags.map(f => `<span class="badge badge-warning">${f}</span>`).join('') : '<span class="badge badge-success">NO FLAGS</span>';
-
-      // Camera
-      const cam = res.camera || {};
-      document.getElementById('infoCamModel').innerText = cam.model || 'Unknown';
-      document.getElementById('infoCamConf').innerText = (cam.confidence ? (cam.confidence * 100).toFixed(1) + '%' : '0%');
-
-      document.getElementById('camManufacturer').innerText = cam.manufacturer || 'Unknown';
-      document.getElementById('camModelFull').innerText = cam.model || 'Unknown';
-      document.getElementById('camKnownStatus').innerHTML = cam.known_camera ? 
-        '<span class="badge badge-success">KNOWN CAMERA MODEL</span>' : 
-        '<span class="badge badge-warning">UNKNOWN / UNSEEN CAMERA</span>';
-
-      const topTable = document.getElementById('topCandidatesTable');
-      const candidates = cam.top_candidates || [];
-      topTable.innerHTML = candidates.map(c => `
-        <tr>
-          <td>#${c.rank}</td>
-          <td><strong>${c.camera_model}</strong></td>
-          <td>${(c.confidence * 100).toFixed(1)}%</td>
-        </tr>
-      `).join('');
-
-      // Heatmaps & Artifacts
-      const artifacts = res.artifacts || {};
-      if (artifacts.noise_residual) document.getElementById('imgNoiseResidual').src = `/artifacts/${analysisId}/noise_residual.png`;
-      if (artifacts.frequency_spectrum) document.getElementById('imgFrequencySpectrum').src = `/artifacts/${analysisId}/frequency_spectrum.png`;
-      if (artifacts.ela) document.getElementById('imgEla').src = `/artifacts/${analysisId}/ela.png`;
-      if (artifacts.noise_heatmap) document.getElementById('imgLocalNoise').src = `/artifacts/${analysisId}/noise_heatmap.png`;
-
-      // Manipulation
-      const manip = res.manipulation || {};
-      const cm = (manip.evidence && manip.evidence.copy_move) || manip.copy_move || {};
-      document.getElementById('cmStatus').innerText = cm.copy_move_detected ? 'DETECTED' : 'NONE DETECTED';
-      document.getElementById('cmStatus').className = cm.copy_move_detected ? 'metric-value badge-danger' : 'metric-value';
-      document.getElementById('cmInliers').innerText = cm.ransac_inliers || 0;
-
-      const splice = (manip.evidence && manip.evidence.splice) || manip.splicing || {};
-      document.getElementById('spliceProb').innerText = (splice.tampered_probability ? (splice.tampered_probability * 100).toFixed(1) + '%' : '0%');
-      const jpegEvidence = (manip.evidence && manip.evidence.jpeg) || manip.compression || {};
-      const recomp = jpegEvidence.possible_recompression || (jpegEvidence.compression_features && jpegEvidence.compression_features.possible_recompression) || false;
-      document.getElementById('recompressionStatus').innerHTML = recomp ? 
-        '<span class="badge badge-warning">POSSIBLE RECOMPRESSION</span>' : 
-        '<span class="badge badge-success">SINGLE COMPRESSION</span>';
-
-      // Metadata Table
-      const meta = res.metadata || {};
-      const fields = meta.metadata_fields || {};
-      const metaTable = document.getElementById('metadataTable');
-      const sources = meta.metadata_sources || [];
-      const rows = sources.length ? [`
-        <tr><td><strong>Detected sources</strong></td><td>${sources.join(', ')}</td></tr>
-      `] : [];
-      rows.push(...Object.entries(fields).map(([k, v]) => `
-        <tr>
-          <td><strong>${k}</strong></td>
-          <td>${typeof v === 'object' ? JSON.stringify(v) : v}</td>
-        </tr>
-      `));
-      metaTable.innerHTML = rows.length ? rows.join('') : `<tr><td colspan="2">No embedded metadata found (EXIF, XMP, or container text)</td></tr>`;
-
-      // Robustness
-      const rob = res.robustness || {};
-      const robResults = rob.results || rob.robustness_results || [];
-      const robTable = document.getElementById('robustnessTable');
-      robTable.innerHTML = robResults.length ? robResults.map(r => `
-        <tr>
-          <td>${r.transformation}</td>
-          <td><strong>${r.prediction || 'Unknown'}</strong></td>
-          <td>${(r.confidence * 100).toFixed(1)}%</td>
-          <td>${r.prediction_changed ? '<span class="badge badge-warning">YES</span>' : '<span class="badge badge-success">NO</span>'}</td>
-        </tr>
-      `).join('') : '<tr><td colspan="4">No robustness results available for this analysis.</td></tr>';
-
-      // Report
-      const rep = res.report || {};
-      const textReport = fetch(`/artifacts/reports/${analysisId}.txt`).then(r => r.text()).then(txt => {
-        document.getElementById('reportText').innerText = txt;
-        document.getElementById('downloadReportBtn').href = `/artifacts/reports/${analysisId}.txt`;
-      }).catch(() => {
-        document.getElementById('reportText').innerText = JSON.stringify(rep, null, 2);
-      });
-    }
-  </script>
-</body>
+    <script src="/static/app.js"></script>
+  </body>
 </html>
