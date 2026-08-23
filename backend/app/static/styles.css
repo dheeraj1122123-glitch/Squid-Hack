@@ -2322,3 +2322,117 @@ body {
     font-size: 2.8rem;
   }
 }
+
+/* Readability pass — palette and typography only. */
+:root {
+  --bg-inset: #FFF8F1;
+  --text-muted: #5C4C43;
+  --text-dim: #5C4C43;
+  --border-medium: rgba(22, 17, 15, 0.22);
+}
+
+html { font-size: 16px; }
+body { font-size: 1rem; }
+
+.nav-links,
+.system-status,
+.hero-tags,
+.sample-evidence-bar,
+.results-banner,
+.forensic-dialog,
+.toast-popup {
+  background: rgba(255, 253, 249, 0.92);
+  color: var(--text-main);
+  border-color: rgba(22, 17, 15, 0.14);
+}
+
+.nav-btn,
+.system-status,
+.brand-tag,
+.eyebrow,
+.metric-label,
+.visual-header,
+.compare-regions-box h4,
+.protocol-tag,
+.artifact-subtitle,
+.artifact-stat-row,
+.ledger-list,
+.candidate-mini-row {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.card,
+.metric-card,
+.visual-figure,
+.region-pill,
+.dashboard-main-card,
+.verdict-card,
+.artifact-card-full,
+.overview-kpi-card,
+.artifact-mini-card,
+.report-pre-block,
+.camera-search-results-box {
+  background: rgba(255, 253, 249, 0.82);
+  color: var(--text-main);
+  border-color: rgba(22, 17, 15, 0.12);
+}
+
+.gauge-value,
+.verdict-details h3,
+.camera-name,
+.stat-val,
+.overview-kpi-card strong,
+.artifact-title,
+.artifact-mini-title,
+.report-tab-btn.active,
+.lightbox-info h3 {
+  color: var(--text-main);
+}
+
+.metric-card small,
+.visual-caption,
+.region-pill small,
+.verdict-details p,
+.artifact-desc,
+.artifact-subtitle,
+.overview-kpi-card span,
+.artifact-mini-sub,
+.dialog-hint {
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.metric-val,
+.section-heading h2,
+.hero-title,
+.card-title,
+.artifact-title,
+.verdict-details h3,
+.camera-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.metric-label,
+.protocol-tag,
+.brand-tag,
+.eyebrow,
+.nav-btn {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.btn-primary,
+.drop-action-btn,
+.nav-btn.active,
+.protocol-badge,
+.badge-accent {
+  color: #FFFDF9;
+  background-color: var(--accent-crimson);
+}
+
+.btn-primary:hover,
+.drop-action-btn:hover {
+  background-color: var(--accent-hot);
+}
